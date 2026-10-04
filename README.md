@@ -162,3 +162,32 @@ bin/rspec          # model, request, job and service specs (HTTP is stubbed with
 bin/rubocop        # lint
 bin/brakeman       # security scan
 ```
+
+## Deployment
+
+Pinfolio deploys with [Kamal](https://kamal-deploy.org) to a single DigitalOcean droplet
+(`config/deploy.yml`). The app, its background jobs and kamal-proxy run in Docker on the
+droplet, served over plain HTTP on port 80. The SQLite databases and downloaded images
+live in the `pinfolio_storage` Docker volume.
+
+Requirements:
+
+* A droplet (Ubuntu, 1 GB RAM or more) reachable as `root` with your SSH key.
+  Kamal installs Docker on it during setup.
+* Docker running locally (Docker Desktop or OrbStack); the image is built here and
+  pushed to the droplet through Kamal's local registry over SSH.
+* `config/master.key`, which is passed to the app as `RAILS_MASTER_KEY` (see `.kamal/secrets`).
+
+The droplet's IP is read from `KAMAL_HOST` so it stays out of the repository:
+
+```sh
+export KAMAL_HOST=203.0.113.10   # your droplet's IP
+bin/kamal setup                  # first deploy: installs Docker, kamal-proxy and the app
+bin/kamal deploy                 # every later deploy
+bin/kamal logs                   # tail the app's logs
+bin/kamal console                # Rails console on the droplet
+```
+
+The app has no authentication, so anyone with its URL can change and delete posts.
+Pinterest may also block or challenge requests from data-center IPs; check that
+"+" collects images on the droplet before relying on it.
