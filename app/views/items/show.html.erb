@@ -10,7 +10,7 @@
       <% end %>
 
       <%= link_to @item.url, target: "_blank", rel: "noopener noreferrer", title: "Open on Pinterest" do %>
-        <%= image_tag rails_blob_path(@item.image), alt: @post.title,
+        <%= image_tag rails_representation_path(@item.image.variant(:preview)), alt: @post.title,
               class: "max-h-[78vh] max-w-[calc(100vw-9rem)] rounded-md object-contain shadow-2xl" if @item.image.attached? %>
       <% end %>
 

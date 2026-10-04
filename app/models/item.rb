@@ -1,9 +1,11 @@
 class Item < ApplicationRecord
   # Touching the post broadcasts a page refresh (see Post); attaching an image touches the item
   belongs_to :post, touch: true
-  # Tiles are at most ~180px wide (8 columns), so 400px covers 2x screens; generated after upload
+  # Variants are generated after upload. Tiles are at most ~180px wide (8 columns), so 400px
+  # covers 2x screens; the preview modal is at most 78vh tall, ~1400px on a 2x laptop screen.
   has_one_attached :image do |attachable|
     attachable.variant :tile, resize_to_fill: [ 400, 400 ], preprocessed: true
+    attachable.variant :preview, resize_to_limit: [ 1600, 1600 ], preprocessed: true
   end
 
   # Hidden items stay in the database so their urls are skipped when collecting more pins

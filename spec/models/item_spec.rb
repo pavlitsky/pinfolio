@@ -148,5 +148,29 @@ RSpec.describe Item, type: :model do
         expect(Item.reflect_on_attachment(:image).named_variants[:tile].preprocessed).to be(true)
       end
     end
+
+    describe "preview variant" do
+      def preview_dimensions
+        image = Vips::Image.new_from_buffer(item.image.variant(:preview).processed.download, "")
+        [ image.width, image.height ]
+      end
+
+      it "shrinks large images to fit 1600px, keeping the aspect ratio" do
+        large = Vips::Image.black(2400, 3200, bands: 3).jpegsave_buffer
+        item.image.attach(io: StringIO.new(large), filename: "large.jpg", content_type: "image/jpeg")
+
+        expect(preview_dimensions).to eq([ 1200, 1600 ])
+      end
+
+      it "keeps smaller images at their size" do
+        item.image.attach(io: file_fixture("photo.jpg").open, filename: "photo.jpg", content_type: "image/jpeg")
+
+        expect(preview_dimensions).to eq([ 800, 600 ])
+      end
+
+      it "is generated after upload rather than on first view" do
+        expect(Item.reflect_on_attachment(:image).named_variants[:preview].preprocessed).to be(true)
+      end
+    end
   end
 end
