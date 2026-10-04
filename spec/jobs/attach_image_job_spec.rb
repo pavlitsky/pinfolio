@@ -59,6 +59,34 @@ RSpec.describe AttachImageJob, type: :job do
     end
   end
 
+  context "when the image is larger than the limit" do
+    before { stub_const("#{described_class}::MAX_SIZE", 10) }
+
+    it "leaves the item without an image when Content-Length is over the limit" do
+      stub_request(:get, image_url).to_return(status: 200, body: "x" * 11, headers: { "Content-Type" => "image/jpeg", "Content-Length" => "11" })
+
+      described_class.perform_now(item, image_url)
+
+      expect(item.reload.image).not_to be_attached
+    end
+
+    it "leaves the item without an image when the body outgrows the limit" do
+      stub_request(:get, image_url).to_return(status: 200, body: "x" * 11, headers: { "Content-Type" => "image/jpeg" })
+
+      described_class.perform_now(item, image_url)
+
+      expect(item.reload.image).not_to be_attached
+    end
+  end
+
+  context "when the download times out" do
+    before { stub_request(:get, image_url).to_timeout }
+
+    it "schedules a retry" do
+      expect { described_class.perform_now(item, image_url) }.to have_enqueued_job(described_class).with(item, image_url)
+    end
+  end
+
   context "when the url does not point to an image" do
     before { stub_request(:get, image_url).to_return(status: 200, body: "<html></html>", headers: { "Content-Type" => "text/html" }) }
 
