@@ -27,6 +27,14 @@ RSpec.describe "/posts", type: :request do
       expect(response.body).not_to include("<label", "New post")
     end
 
+    it "shows the app name linking home in the header, outside the idea form" do
+      get root_url
+
+      link = Nokogiri::HTML(response.body).at_css("a[href='/']")
+      expect(link.text.strip).to eq("Pinfolio")
+      expect(link.ancestors("form#idea_form")).to be_empty
+    end
+
     it "offers a delete (×) button in the post's title row" do
       get root_url
 
