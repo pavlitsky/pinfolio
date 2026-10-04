@@ -1,4 +1,5 @@
-<%= form_with(model: post, id: "idea_form", data: { turbo_permanent: true }) do |form| %>
+<%# Not data-turbo-permanent: streams replace it to clear it after a create or show errors %>
+<%= form_with(model: post, id: "idea_form", data: { controller: "morph-skip", action: "turbo:before-morph-element->morph-skip#skip" }) do |form| %>
   <%= form.text_field :title,
         placeholder: "Search anything...",
         autofocus: true,

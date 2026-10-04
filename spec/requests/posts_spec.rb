@@ -79,9 +79,13 @@ RSpec.describe "/posts", type: :request do
       it "keeps client-side state out of morphs" do
         get root_url
 
-        %w[#idea_form #image_preview #toasts].each do |selector|
+        %w[#image_preview #toasts].each do |selector|
           expect(page.at_css(selector)).to have_attribute("data-turbo-permanent"), selector
         end
+        # Skips morphs but isn't permanent, so streams can still replace it (clearing it after a create)
+        form = page.at_css("#idea_form")
+        expect(form).not_to have_attribute("data-turbo-permanent")
+        expect(form["data-action"]).to eq("turbo:before-morph-element->morph-skip#skip")
         expect(page.at_css("##{ActionView::RecordIdentifier.dom_id(post_record, :hidden_panel)}")).to have_attribute("data-turbo-permanent")
         expect(page.at_css("##{ActionView::RecordIdentifier.dom_id(post_record)}")["data-action"]).to eq("turbo:before-morph-attribute->toggle#preserveState")
       end
