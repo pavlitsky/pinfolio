@@ -109,6 +109,11 @@ RSpec.describe "/posts", type: :request do
       end
     end
 
+    it "has no JSON list" do
+      get posts_url(format: :json)
+      expect(response).to have_http_status(:not_acceptable)
+    end
+
     it "does not allow updating a post" do
       patch "/posts/#{post_record.id}", params: { post: { title: "Updated title" } }
 
