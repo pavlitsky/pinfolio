@@ -1,0 +1,15 @@
+<%= turbo_frame_tag dom_id(@post, :title) do %>
+  <%= form_with model: @post, url: post_title_path(@post), method: :patch,
+        data: { controller: "inline-edit", action: "submit->inline-edit#submitting keydown.esc->inline-edit#cancel" } do |form| %>
+    <%= form.text_field :title,
+          autocomplete: "off",
+          "aria-label": "Post title",
+          data: { inline_edit_target: "input", action: "blur->inline-edit#commit" },
+          class: ["field-sizing-content min-w-[8ch] max-w-full bg-transparent border-b-2 font-semibold text-[2.1rem] leading-tight text-gray-700 focus:outline-none",
+                  @post.errors[:title].any? ? "border-red-400" : "border-gray-300 focus:border-gray-500"] %>
+    <% @post.errors.full_messages_for(:title).each do |message| %>
+      <p class="mt-1 text-sm text-red-500"><%= message %></p>
+    <% end %>
+    <%= link_to "Cancel", post_title_path(@post), class: "sr-only", data: { inline_edit_target: "cancel" } %>
+  <% end %>
+<% end %>

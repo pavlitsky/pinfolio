@@ -8,6 +8,7 @@ Rails.application.routes.draw do
   resources :posts, only: %i[ index create destroy ] do
     scope module: :posts do
       resource :pins, only: :create
+      resource :title, only: %i[ show edit update ]
       resources :hidden_items, only: :index
     end
   end

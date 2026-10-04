@@ -94,4 +94,26 @@ RSpec.describe Post, type: :model do
       expect(post.gallery_item_ids).to eq([ first.id, last.id ])
     end
   end
+
+  describe "renaming" do
+    let(:post) { create(:post, title: "cozy cabin", pinterest_bookmark: "b3") }
+
+    it "restarts the Pinterest search when the title changes" do
+      post.update!(title: "snowy cabin")
+
+      expect(post.reload.pinterest_bookmark).to be_nil
+    end
+
+    it "keeps the search position when other attributes change" do
+      post.update!(pinterest_bookmark: "b4")
+
+      expect(post.reload.pinterest_bookmark).to eq("b4")
+    end
+
+    it "keeps the search position when the title is saved unchanged" do
+      post.update!(title: "cozy cabin")
+
+      expect(post.reload.pinterest_bookmark).to eq("b3")
+    end
+  end
 end

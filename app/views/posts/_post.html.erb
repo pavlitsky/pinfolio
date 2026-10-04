@@ -1,7 +1,7 @@
 <div id="<%= dom_id post %>" class="group/post w-full my-5 space-y-3" data-controller="toggle">
   <div class="flex items-center justify-between gap-4">
     <div class="flex items-baseline gap-3 min-w-0">
-      <h2 class="font-semibold text-[2.1rem] leading-tight text-gray-500"><%= post.title %></h2>
+      <%= render "posts/title", post: %>
       <%= render "posts/hidden_count", post: %>
     </div>
     <%= button_to "×", post, method: :delete,

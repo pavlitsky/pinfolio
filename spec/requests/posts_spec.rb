@@ -52,6 +52,13 @@ RSpec.describe "/posts", type: :request do
       expect(frame.children.to_s.strip).to be_empty
     end
 
+    it "renders each title in its own frame, linking to the inline editor" do
+      get root_url
+
+      frame = Nokogiri::HTML(response.body).at_css("turbo-frame##{ActionView::RecordIdentifier.dom_id(post_record, :title)}")
+      expect(frame.at_css("h2 a")["href"]).to eq(edit_post_title_path(post_record))
+    end
+
     it "has a container for notifications such as Undo" do
       get root_url
 
