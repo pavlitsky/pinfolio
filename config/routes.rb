@@ -9,6 +9,7 @@ Rails.application.routes.draw do
     scope module: :posts do
       resource :pins, only: :create
       resource :title, only: %i[ show edit update ]
+      resource :item_order, only: :update
       resources :hidden_items, only: :index
     end
   end

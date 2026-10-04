@@ -116,4 +116,39 @@ RSpec.describe Post, type: :model do
       expect(post.reload.pinterest_bookmark).to eq("b3")
     end
   end
+
+  describe "#reorder_items!" do
+    let(:post) { create(:post) }
+    let!(:items) { create_list(:item, 4, post:) }
+
+    it "saves the given order" do
+      post.reorder_items!(items.reverse.map(&:id))
+
+      expect(post.reload.items).to eq(items.reverse)
+    end
+
+    it "keeps items left out (hidden ones) in their slots" do
+      items[1].hide!
+      visible = [ items[0], items[2], items[3] ]
+
+      post.reorder_items!([ items[3], items[0], items[2] ].map(&:id))
+
+      expect(post.reload.items).to eq([ items[3], items[1], items[0], items[2] ])
+      expect(post.items.visible).to eq([ items[3], items[0], items[2] ])
+      expect(visible.map { |item| item.reload.position }.sort).to eq([ 1, 3, 4 ])
+    end
+
+    it "accepts ids as strings, as they arrive from a request" do
+      post.reorder_items!(items.reverse.map { |item| item.id.to_s })
+
+      expect(post.reload.items).to eq(items.reverse)
+    end
+
+    it "ignores ids of other posts' items" do
+      other_item = create(:item)
+
+      expect { post.reorder_items!([ other_item.id, *items.reverse.map(&:id) ]) }.not_to change { other_item.reload.position }
+      expect(post.reload.items).to eq(items.reverse)
+    end
+  end
 end

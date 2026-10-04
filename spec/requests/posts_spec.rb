@@ -167,6 +167,36 @@ RSpec.describe "/posts", type: :request do
       end
     end
 
+    describe "drag-to-reorder" do
+      it "wires the image grid to the sortable controller" do
+        get root_url
+
+        grid = Nokogiri::HTML(response.body).at_css("##{ActionView::RecordIdentifier.dom_id(post_record, :grid)}")
+        expect(grid["data-controller"]).to eq("sortable")
+        expect(grid["data-sortable-url-value"]).to eq(post_item_order_path(post_record))
+      end
+
+      it "marks image tiles as sortable by item id, but not the Add More tile" do
+        item = create(:item, post: post_record).tap { |i| attach_image(i) }
+
+        get root_url
+
+        page = Nokogiri::HTML(response.body)
+        expect(page.at_css("##{ActionView::RecordIdentifier.dom_id(item, :tile)}")["data-sortable-id"]).to eq(item.id.to_s)
+        expect(page.at_css("##{ActionView::RecordIdentifier.dom_id(post_record, :add_more)}")["data-sortable-id"]).to be_nil
+      end
+
+      it "shows images in their saved order" do
+        first, second = create_list(:item, 2, post: post_record).each { |i| attach_image(i) }
+        post_record.reorder_items!([ second.id, first.id ])
+
+        get root_url
+
+        tile_ids = Nokogiri::HTML(response.body).css("[id^='tile_item_']").map { |tile| tile["id"] }
+        expect(tile_ids).to eq([ second, first ].map { |i| ActionView::RecordIdentifier.dom_id(i, :tile) })
+      end
+    end
+
     describe "the Add More tile" do
       def add_more_tile
         Nokogiri::HTML(response.body).at_css("##{ActionView::RecordIdentifier.dom_id(post_record, :add_more)}")

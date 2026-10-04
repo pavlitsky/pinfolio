@@ -56,15 +56,37 @@ RSpec.describe Item, type: :model do
   end
 
   describe "database constraints" do
+    # save!(validate: false) also skips assigning a position, so these set one explicitly
     it "rejects a NULL url" do
-      expect { build(:item, url: nil).save!(validate: false) }.to raise_error(ActiveRecord::NotNullViolation)
+      expect { build(:item, url: nil, position: 1).save!(validate: false) }.to raise_error(ActiveRecord::NotNullViolation, /items\.url/)
+    end
+
+    it "rejects a NULL position" do
+      expect { build(:item, position: nil).save!(validate: false) }.to raise_error(ActiveRecord::NotNullViolation, /items\.position/)
     end
 
     it "rejects a duplicate url within the same post" do
       existing = create(:item)
 
-      expect { build(:item, post: existing.post, url: existing.url).save!(validate: false) }
+      expect { build(:item, post: existing.post, url: existing.url, position: 99).save!(validate: false) }
         .to raise_error(ActiveRecord::RecordNotUnique)
+    end
+  end
+
+  describe "position" do
+    let(:post) { create(:post) }
+
+    it "puts new items at the end of their post" do
+      first = create(:item, post:)
+      second = create(:item, post:)
+      other_post_item = create(:item)
+
+      expect([ first.position, second.position ]).to eq([ 1, 2 ])
+      expect(other_post_item.position).to eq(1)
+    end
+
+    it "keeps an explicitly given position" do
+      expect(create(:item, post:, position: 7).position).to eq(7)
     end
   end
 

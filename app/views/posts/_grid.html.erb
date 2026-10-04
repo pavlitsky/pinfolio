@@ -1,4 +1,5 @@
-<div id="<%= dom_id post, :grid %>" class="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-2">
+<div id="<%= dom_id post, :grid %>" class="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-2"
+     data-controller="sortable" data-sortable-url-value="<%= post_item_order_path(post) %>">
   <%= render partial: "items/tile", collection: post.items.select { |item| !item.hidden? && item.image.attached? }, as: :item %>
   <%= render "posts/add_more", post:, loading: false %>
 </div>

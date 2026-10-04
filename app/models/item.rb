@@ -11,10 +11,19 @@ class Item < ApplicationRecord
 
   validates :url, presence: true, format: { with: URL_FORMAT, allow_blank: true }
   validates :url, uniqueness: { scope: :post_id }
+  validates :position, numericality: { only_integer: true }
+
+  # New items go to the end of their post's grid
+  before_validation :append_to_post, on: :create
 
   def hidden? = hidden_at.present?
 
   def hide! = update!(hidden_at: Time.current)
 
   def unhide! = update!(hidden_at: nil)
+
+  private
+    def append_to_post
+      self.position ||= (Item.where(post_id:).maximum(:position) || 0) + 1
+    end
 end

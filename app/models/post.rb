@@ -1,5 +1,5 @@
 class Post < ApplicationRecord
-  has_many :items, -> { order(:id) }, dependent: :destroy
+  has_many :items, -> { order(:position, :id) }, dependent: :destroy
 
   validates :title, presence: true
 
@@ -17,6 +17,19 @@ class Post < ApplicationRecord
 
   # Counts in Ruby so preloaded items (posts index) don't trigger another query
   def hidden_items_count = items.to_a.count(&:hidden?)
+
+  # Reorders the given items (e.g. the visible ones after a drag) by reusing their
+  # current positions in the new order, so items left out (hidden ones) keep their slots.
+  # Ids that don't belong to this post are ignored.
+  def reorder_items!(ids)
+    moved = items.where(id: ids).index_by(&:id)
+    ordered = ids.map(&:to_i).uniq.filter_map { |id| moved[id] }
+    slots = ordered.map(&:position).sort
+
+    transaction do
+      ordered.zip(slots).each { |item, position| item.update!(position:) }
+    end
+  end
 
   private
     def restart_pinterest_search
