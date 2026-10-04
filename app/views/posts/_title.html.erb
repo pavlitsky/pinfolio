@@ -1,5 +1,5 @@
 <%= turbo_frame_tag dom_id(post, :title), class: "min-w-0" do %>
-  <h2 class="font-semibold text-[2.1rem] leading-tight text-gray-500">
+  <h2 class="font-display text-[2.4rem] leading-tight text-gray-700">
     <%= link_to post.title, edit_post_title_path(post),
           class: "cursor-text decoration-gray-300 decoration-dotted underline-offset-8 hover:underline",
           title: "Click to rename" %>

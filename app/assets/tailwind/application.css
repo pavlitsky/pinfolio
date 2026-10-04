@@ -1,1 +1,24 @@
 @import "tailwindcss";
+
+/* Self-hosted from Fontsource (OFL-1.1), Latin subset; served from app/assets/fonts by Propshaft */
+@font-face {
+  font-family: "Instrument Serif";
+  src: url("/instrument-serif-latin-400-normal.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Inter";
+  src: url("/inter-latin-wght-normal.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  /* Logo and post titles */
+  --font-display: "Instrument Serif", ui-serif, Georgia, serif;
+}
