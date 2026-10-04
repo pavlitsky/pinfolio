@@ -23,6 +23,12 @@ RSpec.describe "/posts/:post_id/hidden_items", type: :request do
       let!(:hidden_earlier) { create(:item, post: post_record, hidden_at: 1.hour.ago).tap { |i| attach_image(i) } }
       let!(:other_post_hidden) { create(:item, hidden_at: Time.current).tap { |i| attach_image(i) } }
 
+      it "shows the resized tile variant rather than the original" do
+        get post_hidden_items_url(post_record)
+
+        expect(frame.at_css("##{dom_id(hidden_later, :hidden_tile)} img")["src"]).to start_with("/rails/active_storage/representations/")
+      end
+
       it "lists only this post's hidden items, in the order they were hidden" do
         get post_hidden_items_url(post_record)
 

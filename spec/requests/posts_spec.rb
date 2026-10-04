@@ -96,6 +96,15 @@ RSpec.describe "/posts", type: :request do
       expect(src).to start_with("/rails/active_storage/")
     end
 
+    it "shows tiles with the resized tile variant rather than the original" do
+      item = create(:item, post: post_record).tap { |i| attach_image(i) }
+
+      get root_url
+
+      src = Nokogiri::HTML(response.body).at_css("##{ActionView::RecordIdentifier.dom_id(item, :image)} img")["src"]
+      expect(src).to start_with("/rails/active_storage/representations/")
+    end
+
     it "has a container for notifications such as Undo" do
       get root_url
 

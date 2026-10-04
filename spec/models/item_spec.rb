@@ -133,5 +133,20 @@ RSpec.describe Item, type: :model do
 
       expect(item.image).to be_attached
     end
+
+    describe "tile variant" do
+      before { item.image.attach(io: file_fixture("photo.jpg").open, filename: "photo.jpg", content_type: "image/jpeg") }
+
+      it "crops the image to a 400px square" do
+        tile = item.image.variant(:tile).processed
+
+        image = Vips::Image.new_from_buffer(tile.download, "")
+        expect([ image.width, image.height ]).to eq([ 400, 400 ])
+      end
+
+      it "is generated after upload rather than on first view" do
+        expect(Item.reflect_on_attachment(:image).named_variants[:tile].preprocessed).to be(true)
+      end
+    end
   end
 end

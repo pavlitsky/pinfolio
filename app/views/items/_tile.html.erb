@@ -2,7 +2,7 @@
      data-sortable-id="<%= item.id %>"
      data-controller="removal" data-removal-style-value="shrink" data-action="turbo:before-stream-render@document->removal#animate">
   <%= link_to item_path(item), id: dom_id(item, :image), class: "block size-full hover:opacity-90", draggable: "false", data: { turbo_frame: "modal" } do %>
-    <%= image_tag rails_blob_path(item.image), alt: item.post.title, loading: "lazy", draggable: "false", class: "size-full object-cover" %>
+    <%= image_tag rails_representation_path(item.image.variant(:tile)), alt: item.post.title, loading: "lazy", draggable: "false", class: "size-full object-cover" %>
   <% end %>
   <%# Shade spreading from the top-right corner behind the × %>
   <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgb(0_0_0/0.55),transparent_45%)] opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 [@media(hover:none)]:opacity-100"></div>
