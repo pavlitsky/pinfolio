@@ -1,15 +1,24 @@
 <div id="<%= dom_id post, :add_more %>" class="aspect-square">
   <% if loading %>
-    <div class="size-full flex items-center justify-center rounded-md border-2 border-dashed border-gray-200 text-sm text-gray-400 animate-pulse">
-      Loading…
+    <div class="size-full flex items-center justify-center text-gray-400" role="status" aria-label="Loading more images">
+      <svg class="size-8 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" class="opacity-25" />
+        <path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+      </svg>
     </div>
   <% elsif post.pins_exhausted? %>
-    <div class="size-full flex items-center justify-center rounded-md border-2 border-dashed border-gray-200 text-sm text-gray-400">
+    <div class="size-full flex items-center justify-center text-sm text-gray-400">
       No more
     </div>
   <% else %>
-    <%= button_to "Add More", post_pins_path(post),
+    <%= button_to post_pins_path(post),
           form_class: "size-full",
-          class: "size-full flex items-center justify-center rounded-md border-2 border-dashed border-gray-300 text-sm font-medium text-gray-500 hover:border-gray-400 hover:text-gray-700 focus-visible:outline-2 focus-visible:outline-gray-500 cursor-pointer transition-colors" %>
+          class: "size-full flex items-center justify-center rounded-md text-gray-400 hover:text-gray-700 focus-visible:outline-2 focus-visible:outline-gray-500 cursor-pointer transition-colors",
+          title: "Add more images",
+          "aria-label": "Add more images" do %>
+      <svg class="size-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+        <path d="M12 5v14M5 12h14" />
+      </svg>
+    <% end %>
   <% end %>
 </div>

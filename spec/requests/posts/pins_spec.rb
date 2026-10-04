@@ -23,7 +23,7 @@ RSpec.describe "/posts/:post_id/pins", type: :request do
         expect(response.media_type).to eq("text/vnd.turbo-stream.html")
         stream = Nokogiri::HTML(response.body).at_css("turbo-stream")
         expect([ stream["action"], stream["target"] ]).to eq([ "replace", ActionView::RecordIdentifier.dom_id(post_record, :add_more) ])
-        expect(stream.at_css("template").inner_html).to include("Loading…")
+        expect(stream.at_css("template [role='status']")["aria-label"]).to eq("Loading more images")
         expect(stream.at_css("template button")).to be_nil
       end
     end

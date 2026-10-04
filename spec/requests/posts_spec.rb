@@ -124,7 +124,10 @@ RSpec.describe "/posts", type: :request do
 
         form = add_more_tile.at_css("form[action='#{post_pins_path(post_record)}']")
         expect(form["method"]).to eq("post")
-        expect(form.at_css("button").text.strip).to eq("Add More")
+        button = form.at_css("button")
+        expect(button["aria-label"]).to eq("Add more images")
+        expect(button.at_css("svg")).to be_present
+        expect(button.text.strip).to be_empty
       end
 
       context "when Pinterest has no more pages" do
