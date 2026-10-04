@@ -25,13 +25,13 @@ RSpec.describe AttachImageJob, type: :job do
       expect(streams.size).to eq(1)
       expect(streams.first["action"]).to eq("replace")
       expect(streams.first["target"]).to eq(ActionView::RecordIdentifier.dom_id(item.post))
-      expect(streams.first.at_css("a[href='#{item.url}'] img")).to be_present
+      expect(streams.first.at_css("##{ActionView::RecordIdentifier.dom_id(item, :image)} img")).to be_present
     end
 
     it "uses a host-relative image url in the broadcast, since it is rendered outside a request" do
       streams = capture_turbo_stream_broadcasts(item.post) { described_class.perform_now(item, image_url) }
 
-      expect(streams.first.at_css("a[href='#{item.url}'] img")["src"]).to start_with("/rails/active_storage/")
+      expect(streams.first.at_css("##{ActionView::RecordIdentifier.dom_id(item, :image)} img")["src"]).to start_with("/rails/active_storage/")
     end
   end
 

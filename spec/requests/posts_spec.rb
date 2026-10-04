@@ -42,6 +42,16 @@ RSpec.describe "/posts", type: :request do
       expect(title_row.at_css("form input[name='_method']")["value"]).to eq("delete")
     end
 
+    it "has an empty image preview dialog wired to the modal controller" do
+      get root_url
+
+      dialog = Nokogiri::HTML(response.body).at_css("dialog[data-controller='modal']")
+      expect(dialog["data-action"]).to include("turbo:frame-load->modal#open", "close->modal#reset", "keydown.left->modal#previous", "keydown.right->modal#next")
+      frame = dialog.at_css("turbo-frame#modal")
+      expect(frame["data-modal-target"]).to eq("frame")
+      expect(frame.children.to_s.strip).to be_empty
+    end
+
     it "has a container for notifications such as Undo" do
       get root_url
 
@@ -106,13 +116,12 @@ RSpec.describe "/posts", type: :request do
     context "when items have images" do
       let!(:item) { create(:item, post: post_record, url: "https://example.com/original.jpg").tap { |i| attach_image(i) } }
 
-      it "renders each image linking to the item url in a new tab" do
+      it "renders each image linking to its preview in the modal frame" do
         get root_url
 
         link = Nokogiri::HTML(response.body).at_css("##{ActionView::RecordIdentifier.dom_id(item, :image)}")
-        expect(link["href"]).to eq(item.url)
-        expect(link["target"]).to eq("_blank")
-        expect(link["rel"]).to include("noopener")
+        expect(link["href"]).to eq(item_path(item))
+        expect(link["data-turbo-frame"]).to eq("modal")
         expect(link.at_css("img")).to be_present
       end
 

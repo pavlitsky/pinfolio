@@ -1,0 +1,36 @@
+<%= turbo_frame_tag "modal" do %>
+  <% arrow_class = "flex items-center justify-center size-12 shrink-0 rounded-full text-4xl leading-none text-white/70" %>
+  <div class="flex flex-col items-center gap-4">
+    <div class="flex items-center gap-2 sm:gap-4">
+      <% if @previous_id %>
+        <%= link_to "‹", item_path(@previous_id), class: "#{arrow_class} hover:bg-white/10 hover:text-white",
+              title: "Previous (←)", "aria-label": "Previous image", data: { modal_target: "previous" } %>
+      <% else %>
+        <span class="<%= arrow_class %> opacity-20" aria-hidden="true">‹</span>
+      <% end %>
+
+      <%= link_to @item.url, target: "_blank", rel: "noopener noreferrer", title: "Open on Pinterest" do %>
+        <%= image_tag rails_blob_path(@item.image), alt: @post.title,
+              class: "max-h-[78vh] max-w-[calc(100vw-9rem)] rounded-md object-contain shadow-2xl" if @item.image.attached? %>
+      <% end %>
+
+      <% if @next_id %>
+        <%= link_to "›", item_path(@next_id), class: "#{arrow_class} hover:bg-white/10 hover:text-white",
+              title: "Next (→)", "aria-label": "Next image", data: { modal_target: "next" } %>
+      <% else %>
+        <span class="<%= arrow_class %> opacity-20" aria-hidden="true">›</span>
+      <% end %>
+    </div>
+
+    <div class="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm text-white/80">
+      <span class="text-white/50">
+        <%= @post.title %><% if @position %> · <%= @position + 1 %> of <%= @total %><% end %>
+      </span>
+      <%= link_to "Open on Pinterest ↗", @item.url, target: "_blank", rel: "noopener noreferrer", class: "hover:text-white" %>
+      <%= button_to "Hide", hide_item_path(@item), method: :patch,
+            class: "hover:text-white cursor-pointer",
+            form: { data: { action: "turbo:submit-end->modal#advance" } } %>
+      <button type="button" class="hover:text-white cursor-pointer" data-action="modal#close" autofocus>Close (Esc)</button>
+    </div>
+  </div>
+<% end %>

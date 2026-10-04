@@ -1,5 +1,5 @@
 Rails.application.routes.draw do
-  resources :items, only: [] do
+  resources :items, only: :show do
     member do
       patch :hide
       patch :unhide

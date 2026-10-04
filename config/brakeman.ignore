@@ -1,0 +1,35 @@
+{
+  "ignored_warnings": [
+    {
+      "warning_type": "Cross-Site Scripting",
+      "fingerprint": "27ead82867eb2ea54fe4c7aa759dda2fd01d2dff9bbd9e14fffff1df92204fff",
+      "check_name": "LinkToHref",
+      "message": "Potentially unsafe model attribute in `link_to` href",
+      "file": "app/views/items/show.html.erb",
+      "line": 12,
+      "code": "link_to(Item.find(params.expect(:id)).url, :target => \"_blank\", :rel => \"noopener noreferrer\", :title => \"Open on Pinterest\")",
+      "note": "Item#url is validated as a full http(s) url (Item::URL_FORMAT, anchored) and is only created by CollectPinsJob as https://www.pinterest.com/pin/<id>/, so it cannot be a javascript: url."
+    },
+    {
+      "warning_type": "Cross-Site Scripting",
+      "fingerprint": "e020f8ff9527bb250b2213d057cf3971062761dab6b06eff418a7c52b990d81d",
+      "check_name": "LinkToHref",
+      "message": "Potentially unsafe model attribute in `link_to` href",
+      "file": "app/views/items/show.html.erb",
+      "line": 29,
+      "code": "link_to(\"Open on Pinterest \\u2197\", Item.find(params.expect(:id)).url, :target => \"_blank\", :rel => \"noopener noreferrer\", :class => \"hover:text-white\")",
+      "note": "Item#url is validated as a full http(s) url (Item::URL_FORMAT, anchored) and is only created by CollectPinsJob as https://www.pinterest.com/pin/<id>/, so it cannot be a javascript: url."
+    },
+    {
+      "warning_type": "Redirect",
+      "fingerprint": "e861529c6e0fae27a7ef20b9bc9351e1561c8f2a7d274f267c75e3251e4f2f37",
+      "check_name": "Redirect",
+      "message": "Possible unprotected redirect",
+      "file": "app/controllers/items_controller.rb",
+      "line": 7,
+      "code": "redirect_to(Item.find(params.expect(:id)).url, :allow_other_host => true)",
+      "note": "Intentional: opening an item outside the preview modal (new tab, no JavaScript) goes to its Pinterest pin. Item#url is a validated http(s) url built by CollectPinsJob, not request input."
+    }
+  ],
+  "brakeman_version": "8.1.0"
+}

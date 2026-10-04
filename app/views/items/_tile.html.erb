@@ -1,6 +1,6 @@
 <div id="<%= dom_id item, :tile %>" class="group relative aspect-square overflow-hidden rounded-md bg-gray-100"
      data-controller="removal" data-removal-style-value="shrink" data-action="turbo:before-stream-render@document->removal#animate">
-  <%= link_to item.url, target: "_blank", rel: "noopener noreferrer", id: dom_id(item, :image), class: "block size-full hover:opacity-90" do %>
+  <%= link_to item_path(item), id: dom_id(item, :image), class: "block size-full hover:opacity-90", data: { turbo_frame: "modal" } do %>
     <%= image_tag rails_blob_path(item.image), alt: item.post.title, loading: "lazy", class: "size-full object-cover" %>
   <% end %>
   <%# Shade spreading from the top-right corner behind the × %>

@@ -6,7 +6,10 @@ class Item < ApplicationRecord
   scope :visible, -> { where(hidden_at: nil) }
   scope :hidden, -> { where.not(hidden_at: nil) }
 
-  validates :url, presence: true, format: { with: URI::DEFAULT_PARSER.make_regexp(%w[http https]), allow_blank: true }
+  # Anchored so the whole value must be an http(s) url; it is rendered as a link href
+  URL_FORMAT = /\A#{URI::DEFAULT_PARSER.make_regexp(%w[http https])}\z/
+
+  validates :url, presence: true, format: { with: URL_FORMAT, allow_blank: true }
   validates :url, uniqueness: { scope: :post_id }
 
   def hidden? = hidden_at.present?

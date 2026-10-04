@@ -25,7 +25,7 @@ RSpec.describe Item, type: :model do
     end
 
     context "with a malformed url" do
-      %w[not-a-url ftp://example.com/image.jpg javascript:alert(1)].each do |url|
+      [ "not-a-url", "ftp://example.com/image.jpg", "javascript:alert(1)", "javascript:alert(1)//https://example.com", "see https://example.com" ].each do |url|
         it "rejects #{url.inspect}" do
           item = build(:item, url:)
 

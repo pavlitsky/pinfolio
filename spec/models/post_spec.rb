@@ -81,4 +81,17 @@ RSpec.describe Post, type: :model do
       expect(post.hidden_items_count).to eq(2)
     end
   end
+
+  describe "#gallery_item_ids" do
+    it "lists visible items with images, in grid order" do
+      post = create(:post)
+      attach = ->(item) { item.image.attach(io: StringIO.new("x"), filename: "a.jpg", content_type: "image/jpeg") }
+      first = create(:item, post:).tap(&attach)
+      create(:item, post:, hidden_at: Time.current).tap(&attach)
+      create(:item, post:)
+      last = create(:item, post:).tap(&attach)
+
+      expect(post.gallery_item_ids).to eq([ first.id, last.id ])
+    end
+  end
 end
