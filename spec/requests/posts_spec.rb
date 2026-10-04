@@ -37,6 +37,8 @@ RSpec.describe "/posts", type: :request do
       title_row = entry.at_css("h2").parent
       button = title_row.at_css("form[action='#{post_path(post_record)}'] button")
       expect(button["aria-label"]).to eq("Delete post “Holiday photos”")
+      expect(entry.at_css(".group\\/post")).to be_present
+      expect(button["class"]).to include("opacity-0", "group-hover/post:opacity-100")
       expect(title_row.at_css("form input[name='_method']")["value"]).to eq("delete")
     end
 

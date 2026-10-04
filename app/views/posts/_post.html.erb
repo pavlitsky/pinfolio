@@ -1,9 +1,9 @@
-<div id="<%= dom_id post %>" class="w-full my-5 space-y-3">
+<div id="<%= dom_id post %>" class="group/post w-full my-5 space-y-3">
   <div class="flex items-center justify-between gap-4">
     <h2 class="font-semibold text-[2.1rem] leading-tight text-gray-500"><%= post.title %></h2>
     <%= button_to "×", post, method: :delete,
           form_class: "shrink-0",
-          class: "flex items-center justify-center size-8 rounded-full text-2xl leading-none text-gray-400 hover:text-red-600 hover:bg-red-50 focus-visible:outline-2 focus-visible:outline-red-600 cursor-pointer transition-colors",
+          class: "flex items-center justify-center size-8 rounded-full text-2xl leading-none text-gray-400 hover:text-red-600 hover:bg-red-50 focus-visible:outline-2 focus-visible:outline-red-600 cursor-pointer transition opacity-0 group-hover/post:opacity-100 focus-visible:opacity-100 [@media(hover:none)]:opacity-100",
           title: "Delete post",
           "aria-label": "Delete post “#{post.title}”" %>
   </div>
