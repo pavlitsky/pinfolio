@@ -23,7 +23,7 @@ RSpec.describe "/posts", type: :request do
       get root_url
 
       input = Nokogiri::HTML(response.body).at_css("form#idea_form input[name='post[title]']")
-      expect(input["placeholder"]).to eq("The idea is...")
+      expect(input["placeholder"]).to eq("Search anything...")
       expect(response.body).not_to include("<label", "New post")
     end
 
