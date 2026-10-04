@@ -1,13 +1,12 @@
 class ItemsController < ApplicationController
-  # DELETE /items/1 or /items/1.json
-  def destroy
+  # PATCH /items/1/hide
+  def hide
     @item = Item.find(params.expect(:id))
-    @item.destroy!
+    @item.hide!
 
     respond_to do |format|
       format.turbo_stream
-      format.html { redirect_to root_path, notice: "Item was successfully destroyed.", status: :see_other }
-      format.json { head :no_content }
+      format.html { redirect_to root_path, notice: "Image was hidden.", status: :see_other }
     end
   end
 end

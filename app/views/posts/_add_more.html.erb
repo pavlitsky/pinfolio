@@ -1,0 +1,15 @@
+<div id="<%= dom_id post, :add_more %>" class="aspect-square">
+  <% if loading %>
+    <div class="size-full flex items-center justify-center rounded-md border-2 border-dashed border-gray-200 text-sm text-gray-400 animate-pulse">
+      Loading…
+    </div>
+  <% elsif post.pins_exhausted? %>
+    <div class="size-full flex items-center justify-center rounded-md border-2 border-dashed border-gray-200 text-sm text-gray-400">
+      No more
+    </div>
+  <% else %>
+    <%= button_to "Add More", post_pins_path(post),
+          form_class: "size-full",
+          class: "size-full flex items-center justify-center rounded-md border-2 border-dashed border-gray-300 text-sm font-medium text-gray-500 hover:border-gray-400 hover:text-gray-700 focus-visible:outline-2 focus-visible:outline-gray-500 cursor-pointer transition-colors" %>
+  <% end %>
+</div>

@@ -47,4 +47,28 @@ RSpec.describe Post, type: :model do
       expect { post.collect_pins_later }.to have_enqueued_job(CollectPinsJob).with(post)
     end
   end
+
+  describe "#pins_exhausted?" do
+    it "is false before any collection" do
+      expect(build(:post)).not_to be_pins_exhausted
+    end
+
+    it "is false while Pinterest has more pages" do
+      expect(build(:post, pinterest_bookmark: "abc")).not_to be_pins_exhausted
+    end
+
+    it "is true once Pinterest has no more pages" do
+      expect(build(:post, pinterest_bookmark: PinterestSearch::END_BOOKMARK)).to be_pins_exhausted
+    end
+  end
+
+  describe "#items" do
+    it "are ordered by creation, oldest first" do
+      post = create(:post)
+      first = create(:item, post:)
+      second = create(:item, post:)
+
+      expect(post.reload.items).to eq([ first, second ])
+    end
+  end
 end

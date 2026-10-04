@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_04_145911) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_04_160832) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -44,13 +44,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_04_145911) do
     t.string "url", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["post_id"], name: "index_items_on_post_id"
+    t.datetime "hidden_at"
+    t.index ["post_id", "url"], name: "index_items_on_post_id_and_url", unique: true
   end
 
   create_table "posts", force: :cascade do |t|
     t.string "title", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.text "pinterest_bookmark"
   end
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"

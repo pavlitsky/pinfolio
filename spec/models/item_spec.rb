@@ -36,9 +36,52 @@ RSpec.describe Item, type: :model do
     end
   end
 
+  describe "url uniqueness" do
+    let(:existing) { create(:item) }
+
+    context "within the same post" do
+      it "is invalid" do
+        item = build(:item, post: existing.post, url: existing.url)
+
+        expect(item).not_to be_valid
+        expect(item.errors[:url]).to include("has already been taken")
+      end
+    end
+
+    context "in another post" do
+      it "is valid" do
+        expect(build(:item, url: existing.url)).to be_valid
+      end
+    end
+  end
+
   describe "database constraints" do
     it "rejects a NULL url" do
       expect { build(:item, url: nil).save!(validate: false) }.to raise_error(ActiveRecord::NotNullViolation)
+    end
+
+    it "rejects a duplicate url within the same post" do
+      existing = create(:item)
+
+      expect { build(:item, post: existing.post, url: existing.url).save!(validate: false) }
+        .to raise_error(ActiveRecord::RecordNotUnique)
+    end
+  end
+
+  describe "hiding" do
+    let(:item) { create(:item) }
+
+    it "is visible by default" do
+      expect(item).not_to be_hidden
+      expect(Item.visible).to include(item)
+    end
+
+    it "#hide! hides the item but keeps it in the database" do
+      item.hide!
+
+      expect(item.reload).to be_hidden
+      expect(Item.visible).not_to include(item)
+      expect(Item.exists?(item.id)).to be(true)
     end
   end
 

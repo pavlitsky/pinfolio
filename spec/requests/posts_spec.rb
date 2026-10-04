@@ -27,14 +27,13 @@ RSpec.describe "/posts", type: :request do
       expect(response.body).not_to include("<label", "New post")
     end
 
-    it "offers only a delete (×) button, in the post's title row" do
+    it "offers a delete (×) button in the post's title row" do
       get root_url
 
       entry = Nokogiri::HTML(response.body).at_css("##{ActionView::RecordIdentifier.dom_id(post_record, :entry)}")
       expect(entry["data-controller"]).to eq("removal")
-      expect(entry.css("button").map { |button| button.text.strip }).to eq([ "×" ])
-
       title_row = entry.at_css("h2").parent
+      expect(title_row.css("button").map { |button| button.text.strip }).to eq([ "×" ])
       button = title_row.at_css("form[action='#{post_path(post_record)}'] button")
       expect(button["aria-label"]).to eq("Delete post “Holiday photos”")
       expect(entry.at_css(".group\\/post")).to be_present
@@ -72,17 +71,17 @@ RSpec.describe "/posts", type: :request do
         expect(link.at_css("img")).to be_present
       end
 
-      it "renders a delete (×) button in the image tile's top-right corner" do
+      it "renders a hide (×) button in the image tile's top-right corner" do
         get root_url
 
         tile = Nokogiri::HTML(response.body).at_css("##{ActionView::RecordIdentifier.dom_id(item, :tile)}")
         expect(tile["data-controller"]).to eq("removal")
         expect(tile["data-removal-style-value"]).to eq("shrink")
 
-        form = tile.at_css("form[action='#{item_path(item)}']")
+        form = tile.at_css("form[action='#{hide_item_path(item)}']")
         expect(form["class"]).to include("absolute", "top-0", "right-0")
-        expect(form.at_css("input[name='_method']")["value"]).to eq("delete")
-        expect(form.at_css("button")["aria-label"]).to eq("Delete image")
+        expect(form.at_css("input[name='_method']")["value"]).to eq("patch")
+        expect(form.at_css("button")["aria-label"]).to eq("Hide image")
         expect(form.at_css("button")["class"]).to include("opacity-0", "group-hover:opacity-100")
       end
     end
@@ -90,11 +89,53 @@ RSpec.describe "/posts", type: :request do
     context "when items have no images" do
       let!(:item) { create(:item, post: post_record) }
 
-      it "does not render an image link for them" do
+      it "does not render an image tile for them" do
         get root_url
 
-        expect(response.body).not_to include(ActionView::RecordIdentifier.dom_id(item, :image))
-        expect(response.body).to include("No images yet.")
+        expect(response.body).not_to include(ActionView::RecordIdentifier.dom_id(item, :tile))
+      end
+    end
+
+    context "when an item is hidden" do
+      let!(:item) { create(:item, post: post_record, hidden_at: Time.current).tap { |i| attach_image(i) } }
+
+      it "does not render its image" do
+        get root_url
+
+        expect(response.body).not_to include(ActionView::RecordIdentifier.dom_id(item, :tile))
+      end
+    end
+
+    describe "the Add More tile" do
+      def add_more_tile
+        Nokogiri::HTML(response.body).at_css("##{ActionView::RecordIdentifier.dom_id(post_record, :add_more)}")
+      end
+
+      it "is the last tile in the post's grid" do
+        create(:item, post: post_record).tap { |i| attach_image(i) }
+
+        get root_url
+
+        expect(add_more_tile.parent.element_children.last["id"]).to eq(add_more_tile["id"])
+      end
+
+      it "posts to collect more pins for the post" do
+        get root_url
+
+        form = add_more_tile.at_css("form[action='#{post_pins_path(post_record)}']")
+        expect(form["method"]).to eq("post")
+        expect(form.at_css("button").text.strip).to eq("Add More")
+      end
+
+      context "when Pinterest has no more pages" do
+        before { post_record.update!(pinterest_bookmark: PinterestSearch::END_BOOKMARK) }
+
+        it "shows No more instead of a button" do
+          get root_url
+
+          expect(add_more_tile.at_css("button")).to be_nil
+          expect(add_more_tile.text.strip).to eq("No more")
+        end
       end
     end
   end

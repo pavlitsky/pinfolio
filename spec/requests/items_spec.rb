@@ -23,30 +23,33 @@ RSpec.describe "/items", type: :request do
       expect(response).to have_http_status(:not_found)
       expect(item.reload.url).not_to eq("https://example.com/new.jpg")
     end
+
+    it "does not allow deleting an item" do
+      expect { delete "/items/#{item.id}" }.not_to change(Item, :count)
+      expect(response).to have_http_status(:not_found)
+    end
   end
 
-  describe "DELETE /destroy" do
+  describe "PATCH /hide" do
     let!(:item) { create(:item) }
 
-    it "destroys the requested item" do
-      expect { delete item_url(item) }.to change(Item, :count).by(-1)
+    it "hides the item without deleting it" do
+      expect { patch hide_item_url(item) }.not_to change(Item, :count)
+      expect(item.reload).to be_hidden
     end
 
     it "redirects to the posts list" do
-      delete item_url(item)
+      patch hide_item_url(item)
       expect(response).to redirect_to(root_url)
     end
 
     context "as a Turbo Stream (the × on an image)" do
       let(:headers) { { "Accept" => "text/vnd.turbo-stream.html, text/html" } }
 
-      it "destroys the item" do
-        expect { delete(item_url(item), headers:) }.to change(Item, :count).by(-1)
-      end
-
       it "removes only the item's image tile" do
-        delete(item_url(item), headers:)
+        patch(hide_item_url(item), headers:)
 
+        expect(item.reload).to be_hidden
         expect(response.media_type).to eq("text/vnd.turbo-stream.html")
         streams = Nokogiri::HTML(response.body).css("turbo-stream")
         expect(streams.map { |stream| [ stream["action"], stream["target"] ] })
