@@ -27,6 +27,28 @@ RSpec.describe AttachImageJob, type: :job do
     end
   end
 
+  context "when the image is in a format browsers can't display (HEIC)" do
+    let(:image_url) { "https://i.pinimg.com/originals/ab/cd/photo.heic" }
+
+    it "attaches it converted to JPEG" do
+      stub_request(:get, image_url).to_return(status: 200, body: file_fixture("photo.heic").binread, headers: { "Content-Type" => "image/heic" })
+
+      described_class.perform_now(item, image_url)
+
+      expect(item.reload.image).to be_attached
+      expect(item.image.filename.to_s).to eq("photo.jpg")
+      expect(item.image.content_type).to eq("image/jpeg")
+    end
+
+    it "leaves the item without an image when it can't be converted" do
+      stub_request(:get, image_url).to_return(status: 200, body: "corrupt", headers: { "Content-Type" => "image/heic" })
+
+      described_class.perform_now(item, image_url)
+
+      expect(item.reload.image).not_to be_attached
+    end
+  end
+
   context "when the download fails" do
     before { stub_request(:get, image_url).to_return(status: 404) }
 

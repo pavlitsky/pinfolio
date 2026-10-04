@@ -1,6 +1,7 @@
 require "net/http"
 
-# Downloads an image from a remote url and attaches it to the item.
+# Downloads an image from a remote url and attaches it to the item, converting
+# formats browsers can't display (e.g. HEIC) to JPEG.
 class AttachImageJob < ApplicationJob
   class DownloadError < StandardError; end
 
@@ -9,7 +10,7 @@ class AttachImageJob < ApplicationJob
   queue_as :default
 
   retry_on Net::OpenTimeout, Net::ReadTimeout, wait: 5.seconds, attempts: 3
-  discard_on DownloadError
+  discard_on DownloadError, WebImage::Error
 
   def perform(item, image_url)
     uri = URI(image_url)
@@ -18,7 +19,9 @@ class AttachImageJob < ApplicationJob
     raise DownloadError, "#{image_url} is not an image" unless response.content_type&.start_with?("image/")
     raise DownloadError, "#{image_url} is larger than #{MAX_SIZE} bytes" if response.body.bytesize > MAX_SIZE
 
+    image = WebImage.call(response.body, content_type: response.content_type, filename: File.basename(uri.path))
+
     # Attaching touches the item and its post, which refreshes pages showing the post
-    item.image.attach(io: StringIO.new(response.body), filename: File.basename(uri.path), content_type: response.content_type)
+    item.image.attach(io: StringIO.new(image.data), filename: image.filename, content_type: image.content_type)
   end
 end
