@@ -117,5 +117,27 @@ RSpec.describe "/items", type: :request do
       delete item_url(item)
       expect(response).to redirect_to(items_url)
     end
+
+    it "redirects back to the referring page" do
+      delete item_url(item), headers: { "Referer" => root_url }
+      expect(response).to redirect_to(root_url)
+    end
+
+    context "as a Turbo Stream (the × on an image)" do
+      let(:headers) { { "Accept" => "text/vnd.turbo-stream.html, text/html" } }
+
+      it "destroys the item" do
+        expect { delete(item_url(item), headers:) }.to change(Item, :count).by(-1)
+      end
+
+      it "removes the item's image tile and items-page row" do
+        delete(item_url(item), headers:)
+
+        expect(response.media_type).to eq("text/vnd.turbo-stream.html")
+        streams = Nokogiri::HTML(response.body).css("turbo-stream")
+        expect(streams.map { |stream| [ stream["action"], stream["target"] ] })
+          .to eq([ [ "remove", "tile_item_#{item.id}" ], [ "remove", "row_item_#{item.id}" ] ])
+      end
+    end
   end
 end

@@ -69,6 +69,20 @@ RSpec.describe "/posts", type: :request do
         expect(link["rel"]).to include("noopener")
         expect(link.at_css("img")).to be_present
       end
+
+      it "renders a delete (×) button in the image tile's top-right corner" do
+        get root_url
+
+        tile = Nokogiri::HTML(response.body).at_css("##{ActionView::RecordIdentifier.dom_id(item, :tile)}")
+        expect(tile["data-controller"]).to eq("removal")
+        expect(tile["data-removal-style-value"]).to eq("shrink")
+
+        form = tile.at_css("form[action='#{item_path(item)}']")
+        expect(form["class"]).to include("absolute", "top-0", "right-0")
+        expect(form.at_css("input[name='_method']")["value"]).to eq("delete")
+        expect(form.at_css("button")["aria-label"]).to eq("Delete image")
+        expect(form.at_css("button")["class"]).to include("opacity-0", "group-hover:opacity-100")
+      end
     end
 
     context "when items have no images" do

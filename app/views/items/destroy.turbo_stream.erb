@@ -1,0 +1,3 @@
+<%# Removes the image tile on the posts page, or the row on the items page %>
+<%= turbo_stream.remove dom_id(@item, :tile) %>
+<%= turbo_stream.remove dom_id(@item, :row) %>

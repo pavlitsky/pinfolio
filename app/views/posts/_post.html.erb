@@ -1,6 +1,6 @@
 <div id="<%= dom_id post %>" class="w-full my-5 space-y-3">
   <div class="flex items-center justify-between gap-4">
-    <h2 class="font-bold text-2xl"><%= post.title %></h2>
+    <h2 class="font-semibold text-[2.1rem] leading-tight text-gray-500"><%= post.title %></h2>
     <%= button_to "×", post, method: :delete,
           form_class: "shrink-0",
           class: "flex items-center justify-center size-8 rounded-full text-2xl leading-none text-gray-400 hover:text-red-600 hover:bg-red-50 focus-visible:outline-2 focus-visible:outline-red-600 cursor-pointer transition-colors",
@@ -8,16 +8,23 @@
           "aria-label": "Delete post “#{post.title}”" %>
   </div>
 
-  <% items_with_images = post.items.select { |item| item.image.attached? } %>
-  <% if items_with_images.any? %>
-    <div class="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-2">
-      <% items_with_images.each do |item| %>
-        <%= link_to item.url, target: "_blank", rel: "noopener noreferrer", id: dom_id(item, :image), class: "block aspect-square overflow-hidden rounded-md bg-gray-100 hover:opacity-90" do %>
-          <%= image_tag item.image, alt: post.title, loading: "lazy", class: "w-full h-full object-cover" %>
+  <div class="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-2">
+    <% post.items.select { |item| item.image.attached? }.each do |item| %>
+      <div id="<%= dom_id item, :tile %>" class="group relative aspect-square overflow-hidden rounded-md bg-gray-100"
+           data-controller="removal" data-removal-style-value="shrink" data-action="turbo:before-stream-render@document->removal#animate">
+        <%= link_to item.url, target: "_blank", rel: "noopener noreferrer", id: dom_id(item, :image), class: "block size-full hover:opacity-90" do %>
+          <%= image_tag item.image, alt: post.title, loading: "lazy", class: "size-full object-cover" %>
         <% end %>
-      <% end %>
-    </div>
-  <% else %>
-    <p class="text-gray-500">No images yet.</p>
-  <% end %>
+        <%# Shade spreading from the top-right corner behind the × %>
+        <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgb(0_0_0/0.55),transparent_45%)] opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 [@media(hover:none)]:opacity-100"></div>
+        <%= button_to "×", item, method: :delete,
+              form_class: "absolute top-0 right-0",
+              class: "flex items-center justify-center size-8 text-2xl leading-none text-white/90 hover:text-white cursor-pointer opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-2 focus-visible:outline-white [@media(hover:none)]:opacity-100",
+              title: "Delete image",
+              "aria-label": "Delete image" %>
+      </div>
+    <% end %>
+    <%# Shown only while the grid has no images, including after the last one is removed %>
+    <p class="hidden only:block col-span-full text-gray-500">No images yet.</p>
+  </div>
 </div>

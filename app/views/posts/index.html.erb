@@ -5,9 +5,11 @@
     <p class="py-2 px-3 bg-green-50 mb-5 text-green-500 font-medium rounded-md inline-block" id="notice"><%= notice %></p>
   <% end %>
 
-  <%= render "idea_form", post: @post %>
+  <div class="sticky top-0 z-10 bg-white py-4 mb-4">
+    <%= render "idea_form", post: @post %>
+  </div>
 
-  <div id="posts" class="min-w-full divide-y divide-gray-200 space-y-5">
+  <div id="posts" class="min-w-full space-y-5">
     <%= render partial: "entry", collection: @posts, as: :post %>
     <%# Shown only while the list has no posts; stays last so new posts prepend before it %>
     <p class="hidden only:block text-center my-10">No posts found.</p>
