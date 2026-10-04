@@ -1,4 +1,4 @@
-<div id="<%= dom_id item, :tile %>" class="group relative aspect-square overflow-hidden rounded-md bg-gray-100 cursor-grab active:cursor-grabbing"
+<div id="<%= dom_id item, :tile %>" class="group relative aspect-square overflow-hidden rounded-md bg-gray-200 cursor-grab active:cursor-grabbing"
      data-sortable-id="<%= item.id %>"
      data-controller="removal" data-removal-style-value="shrink" data-action="turbo:before-stream-render@document->removal#animate">
   <%= link_to item_path(item), id: dom_id(item, :image), class: "block size-full hover:opacity-90", draggable: "false", data: { turbo_frame: "modal" } do %>

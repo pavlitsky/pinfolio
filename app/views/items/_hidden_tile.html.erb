@@ -1,4 +1,4 @@
-<div id="<%= dom_id item, :hidden_tile %>" class="group relative aspect-square overflow-hidden rounded-md bg-gray-100"
+<div id="<%= dom_id item, :hidden_tile %>" class="group relative aspect-square overflow-hidden rounded-md bg-gray-200"
      data-controller="removal" data-removal-style-value="shrink" data-action="turbo:before-stream-render@document->removal#animate">
   <%= image_tag rails_representation_path(item.image.variant(:tile)), alt: item.post.title, loading: "lazy",
         class: "size-full object-cover grayscale opacity-50 transition group-hover:grayscale-0 group-hover:opacity-100" if item.image.attached? %>

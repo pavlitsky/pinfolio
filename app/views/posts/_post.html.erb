@@ -1,4 +1,4 @@
-<div id="<%= dom_id post %>" class="group/post w-full my-5 space-y-3" data-controller="toggle" data-action="turbo:before-morph-attribute->toggle#preserveState">
+<div id="<%= dom_id post %>" class="group/post w-full space-y-3 rounded-xl bg-gray-100 p-4 sm:p-5" data-controller="toggle" data-action="turbo:before-morph-attribute->toggle#preserveState">
   <div class="flex items-center justify-between gap-4">
     <div class="flex items-baseline gap-3 min-w-0">
       <%= render "posts/title", post: %>
@@ -12,7 +12,7 @@
   </div>
 
   <%# Hidden images, fetched the first time the panel is opened %>
-  <div id="<%= dom_id post, :hidden_panel %>" class="rounded-md bg-gray-50 p-3" hidden data-turbo-permanent data-toggle-target="panel">
+  <div id="<%= dom_id post, :hidden_panel %>" class="rounded-md bg-white p-3" hidden data-turbo-permanent data-toggle-target="panel">
     <%= turbo_frame_tag dom_id(post, :hidden_items), src: post_hidden_items_path(post), loading: :lazy do %>
       <p class="text-sm text-gray-400">Loading hidden images…</p>
     <% end %>
