@@ -41,10 +41,57 @@ RSpec.describe Post, type: :model do
   end
 
   describe "#collect_pins_later" do
-    it "enqueues a job collecting pins for the post" do
-      post = create(:post)
+    let(:post) { create(:post) }
 
+    it "enqueues a job collecting pins for the post" do
       expect { post.collect_pins_later }.to have_enqueued_job(CollectPinsJob).with(post)
+    end
+
+    it "marks the post as collecting pins" do
+      post.collect_pins_later
+
+      expect(post.reload).to be_collecting_pins
+    end
+  end
+
+  describe "#collecting_pins?" do
+    it "is false when no collection was requested" do
+      expect(build(:post)).not_to be_collecting_pins
+    end
+
+    it "is true while a recent request is pending" do
+      expect(build(:post, pins_requested_at: 10.seconds.ago)).to be_collecting_pins
+    end
+
+    it "is false once the request is older than the timeout (e.g. the job was lost)" do
+      expect(build(:post, pins_requested_at: (Post::PINS_REQUEST_TIMEOUT + 1.second).ago)).not_to be_collecting_pins
+    end
+  end
+
+  describe "page refresh broadcasts" do
+    let!(:post) { create(:post) }
+
+    before { clear_enqueued_jobs }
+
+    it "refreshes the posts list when a post is created" do
+      create(:post)
+
+      expect(refresh_broadcasts_for("posts")).to eq(1)
+    end
+
+    it "refreshes pages showing the post when it changes" do
+      post.update!(title: "renamed")
+
+      expect(refresh_broadcasts_for(post)).to eq(1)
+    end
+
+    it "refreshes pages showing the post when one of its items changes" do
+      item = create(:item, post:)
+      clear_enqueued_jobs
+
+      item.hide!
+
+      expect(refresh_broadcasts_for(post)).to eq(1)
     end
   end
 

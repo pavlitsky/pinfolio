@@ -1,5 +1,12 @@
 class Post < ApplicationRecord
+  # Pin collection running longer than this is treated as finished (e.g. its job was lost)
+  PINS_REQUEST_TIMEOUT = 2.minutes
+
   has_many :items, -> { order(:position, :id) }, dependent: :destroy
+
+  # Pages showing a post morph-refresh when it (or, via touch, one of its items) changes;
+  # new posts refresh pages subscribed to "posts"
+  broadcasts_refreshes
 
   validates :title, presence: true
 
@@ -8,7 +15,12 @@ class Post < ApplicationRecord
   before_update :restart_pinterest_search, if: :will_save_change_to_title?
 
   # Collects the next batch of pins, continuing from pinterest_bookmark
-  def collect_pins_later = CollectPinsJob.perform_later(self)
+  def collect_pins_later
+    update!(pins_requested_at: Time.current)
+    CollectPinsJob.perform_later(self)
+  end
+
+  def collecting_pins? = pins_requested_at.present? && pins_requested_at.after?(PINS_REQUEST_TIMEOUT.ago)
 
   def pins_exhausted? = pinterest_bookmark == PinterestSearch::END_BOOKMARK
 

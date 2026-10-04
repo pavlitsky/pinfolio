@@ -1,5 +1,6 @@
 class Item < ApplicationRecord
-  belongs_to :post
+  # Touching the post broadcasts a page refresh (see Post); attaching an image touches the item
+  belongs_to :post, touch: true
   has_one_attached :image
 
   # Hidden items stay in the database so their urls are skipped when collecting more pins

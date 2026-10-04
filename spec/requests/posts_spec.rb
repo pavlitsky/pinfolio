@@ -59,6 +59,43 @@ RSpec.describe "/posts", type: :request do
       expect(frame.at_css("h2 a")["href"]).to eq(edit_post_title_path(post_record))
     end
 
+    describe "page refreshes" do
+      def page = Nokogiri::HTML(response.body)
+
+      it "morphs on refresh, keeping the scroll position" do
+        get root_url
+
+        expect(page.at_css("meta[name='turbo-refresh-method']")["content"]).to eq("morph")
+        expect(page.at_css("meta[name='turbo-refresh-scroll']")["content"]).to eq("preserve")
+      end
+
+      it "subscribes to new posts and to each post" do
+        get root_url
+
+        streams = page.css("turbo-cable-stream-source").map { |source| Turbo::StreamsChannel.verified_stream_name(source["signed-stream-name"]) }
+        expect(streams).to include("posts", post_record.to_gid_param)
+      end
+
+      it "keeps client-side state out of morphs" do
+        get root_url
+
+        %w[#idea_form #image_preview #toasts].each do |selector|
+          expect(page.at_css(selector)).to have_attribute("data-turbo-permanent"), selector
+        end
+        expect(page.at_css("##{ActionView::RecordIdentifier.dom_id(post_record, :hidden_panel)}")).to have_attribute("data-turbo-permanent")
+        expect(page.at_css("##{ActionView::RecordIdentifier.dom_id(post_record)}")["data-action"]).to eq("turbo:before-morph-attribute->toggle#preserveState")
+      end
+    end
+
+    it "renders host-relative image urls even outside a request (e.g. Turbo Stream renders)" do
+      item = create(:item, post: post_record).tap { |i| attach_image(i) }
+
+      html = ApplicationController.render(partial: "posts/post", locals: { post: post_record.reload })
+
+      src = Nokogiri::HTML(html).at_css("##{ActionView::RecordIdentifier.dom_id(item, :image)} img")["src"]
+      expect(src).to start_with("/rails/active_storage/")
+    end
+
     it "has a container for notifications such as Undo" do
       get root_url
 
@@ -219,6 +256,17 @@ RSpec.describe "/posts", type: :request do
         expect(button["aria-label"]).to eq("Add more images")
         expect(button.at_css("svg")).to be_present
         expect(button.text.strip).to be_empty
+      end
+
+      context "while pins are being collected" do
+        before { post_record.update!(pins_requested_at: Time.current) }
+
+        it "shows the loading spinner instead of the button" do
+          get root_url
+
+          expect(add_more_tile.at_css("button")).to be_nil
+          expect(add_more_tile.at_css("[role='status']")["aria-label"]).to eq("Loading more images")
+        end
       end
 
       context "when Pinterest has no more pages" do

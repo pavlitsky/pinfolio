@@ -111,27 +111,42 @@ RSpec.describe CollectPinsJob, type: :job do
     end
   end
 
-  describe "refreshing the page" do
-    include Turbo::Broadcastable::TestHelper
+  describe "the post's collecting state" do
+    let(:post) { create(:post, title: "cozy cabin", pins_requested_at: Time.current) }
 
-    it "broadcasts the post once collection finishes" do
+    it "is cleared once collection finishes, refreshing pages showing the post" do
       stub_pages(nil => page(1..2, bookmark: PinterestSearch::END_BOOKMARK))
+      post
+      clear_enqueued_jobs
 
-      streams = capture_turbo_stream_broadcasts(post) { described_class.perform_now(post) }
+      described_class.perform_now(post)
 
-      expect(streams.map { |stream| [ stream["action"], stream["target"] ] }).to eq([ [ "replace", ActionView::RecordIdentifier.dom_id(post) ] ])
+      expect(post.reload).not_to be_collecting_pins
+      expect(refresh_broadcasts_for(post)).to be >= 1
     end
 
     context "when the search fails" do
       before { allow(PinterestSearch).to receive(:call).and_raise(PinterestSearch::Error) }
 
-      it "still broadcasts the post so the Add More tile resets, and creates no items" do
-        streams = capture_turbo_stream_broadcasts(post) do
-          expect { described_class.perform_now(post) }.to raise_error(PinterestSearch::Error)
-        end
+      it "is still cleared so the + tile stops spinning, and no items are created" do
+        expect { described_class.perform_now(post) }.to raise_error(PinterestSearch::Error)
 
-        expect(streams.size).to eq(1)
+        expect(post.reload).not_to be_collecting_pins
         expect(post.items).to be_empty
+      end
+    end
+
+    context "when the post is deleted while collecting" do
+      before do
+        allow(PinterestSearch).to receive(:call) do
+          Post.find(post.id).destroy!
+          page([], bookmark: PinterestSearch::END_BOOKMARK)
+        end
+      end
+
+      it "finishes without error" do
+        expect { described_class.perform_now(post) }.not_to raise_error
+        expect(Post.exists?(post.id)).to be(false)
       end
     end
   end

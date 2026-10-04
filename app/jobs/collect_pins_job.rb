@@ -28,8 +28,8 @@ class CollectPinsJob < ApplicationJob
       break if collected >= limit
     end
   ensure
-    # Re-render the post so the "Add More" tile leaves its loading state, even on failure
-    refresh(post)
+    # Ends the "+" tile's loading state (and refreshes pages showing the post), even on failure
+    post.update!(pins_requested_at: nil) if Post.exists?(post.id)
   end
 
   private
@@ -41,11 +41,5 @@ class CollectPinsJob < ApplicationJob
     rescue ActiveRecord::RecordNotUnique
       # Collected concurrently by another job
       nil
-    end
-
-    def refresh(post)
-      return unless Post.exists?(post.id)
-
-      post.reload.broadcast_replace_to post, partial: "posts/post", locals: { post: }
     end
 end

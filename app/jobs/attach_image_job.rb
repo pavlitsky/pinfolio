@@ -1,7 +1,6 @@
 require "net/http"
 
-# Downloads an image from a remote url, attaches it to the item and
-# refreshes the item's post for anyone viewing it.
+# Downloads an image from a remote url and attaches it to the item.
 class AttachImageJob < ApplicationJob
   class DownloadError < StandardError; end
 
@@ -19,7 +18,7 @@ class AttachImageJob < ApplicationJob
     raise DownloadError, "#{image_url} is not an image" unless response.content_type&.start_with?("image/")
     raise DownloadError, "#{image_url} is larger than #{MAX_SIZE} bytes" if response.body.bytesize > MAX_SIZE
 
+    # Attaching touches the item and its post, which refreshes pages showing the post
     item.image.attach(io: StringIO.new(response.body), filename: File.basename(uri.path), content_type: response.content_type)
-    item.post.broadcast_replace_to item.post, partial: "posts/post", locals: { post: item.post }
   end
 end

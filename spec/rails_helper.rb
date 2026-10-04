@@ -12,6 +12,17 @@ require 'rspec/rails'
 require 'webmock/rspec'
 require 'turbo/broadcastable/test_helper'
 
+# Turbo debounces page-refresh broadcasts on a background timer (0.5s); run them
+# immediately in specs so they deterministically enqueue Turbo::Streams::BroadcastStreamJob
+class ImmediateDebouncer
+  def initialize(delay:); end
+
+  def debounce = yield
+
+  def wait; end
+end
+Turbo::ThreadDebouncer.debouncer_class = ImmediateDebouncer
+
 # Requires supporting ruby files with custom matchers and macros, etc, in
 # spec/support/ and its subdirectories. Files matching `spec/**/*_spec.rb` are
 # run as spec files by default. This means that files in spec/support that end
@@ -25,7 +36,7 @@ require 'turbo/broadcastable/test_helper'
 # directory. Alternatively, in the individual `*_spec.rb` files, manually
 # require only the support files necessary.
 #
-# Rails.root.glob('spec/support/**/*.rb').sort_by(&:to_s).each { |f| require f }
+Rails.root.glob('spec/support/**/*.rb').sort_by(&:to_s).each { |f| require f }
 
 # Ensures that the test database schema matches the current schema file.
 # If there are pending migrations it will invoke `db:test:prepare` to

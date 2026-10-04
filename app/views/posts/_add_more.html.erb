@@ -1,5 +1,5 @@
 <div id="<%= dom_id post, :add_more %>" class="aspect-square">
-  <% if loading %>
+  <% if loading || post.collecting_pins? %>
     <div class="size-full flex items-center justify-center text-gray-400" role="status" aria-label="Loading more images">
       <svg class="size-8 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
         <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" class="opacity-25" />

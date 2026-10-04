@@ -1,4 +1,4 @@
-<%= form_with(model: post, id: "idea_form") do |form| %>
+<%= form_with(model: post, id: "idea_form", data: { turbo_permanent: true }) do |form| %>
   <%= form.text_field :title,
         placeholder: "Search anything...",
         autofocus: true,

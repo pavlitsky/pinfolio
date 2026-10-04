@@ -10,9 +10,17 @@ export default class extends Controller {
   static targets = ["input", "cancel"]
 
   connect() {
+    // Keep the open editor (and what's typed) when a page refresh morphs the page
+    this.frame = this.element.closest("turbo-frame")
+    this.frame?.setAttribute("data-turbo-permanent", "")
+
     this.originalValue = this.inputTarget.value
     this.inputTarget.focus()
     this.inputTarget.select()
+  }
+
+  disconnect() {
+    this.frame?.removeAttribute("data-turbo-permanent")
   }
 
   submitting() {

@@ -1,8 +1,6 @@
 require "rails_helper"
 
 RSpec.describe AttachImageJob, type: :job do
-  include Turbo::Broadcastable::TestHelper
-
   let(:item) { create(:item) }
   let(:image_url) { "https://i.pinimg.com/originals/ab/cd/photo.jpg" }
 
@@ -19,19 +17,13 @@ RSpec.describe AttachImageJob, type: :job do
       expect(item.image.content_type).to eq("image/jpeg")
     end
 
-    it "broadcasts the refreshed post with the new image" do
-      streams = capture_turbo_stream_broadcasts(item.post) { described_class.perform_now(item, image_url) }
+    it "refreshes pages showing the post (attaching touches the item and post)" do
+      item # created before counting
+      clear_enqueued_jobs
 
-      expect(streams.size).to eq(1)
-      expect(streams.first["action"]).to eq("replace")
-      expect(streams.first["target"]).to eq(ActionView::RecordIdentifier.dom_id(item.post))
-      expect(streams.first.at_css("##{ActionView::RecordIdentifier.dom_id(item, :image)} img")).to be_present
-    end
+      described_class.perform_now(item, image_url)
 
-    it "uses a host-relative image url in the broadcast, since it is rendered outside a request" do
-      streams = capture_turbo_stream_broadcasts(item.post) { described_class.perform_now(item, image_url) }
-
-      expect(streams.first.at_css("##{ActionView::RecordIdentifier.dom_id(item, :image)} img")["src"]).to start_with("/rails/active_storage/")
+      expect(refresh_broadcasts_for(item.post)).to be >= 1
     end
   end
 
