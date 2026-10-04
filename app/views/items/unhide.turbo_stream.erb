@@ -1,0 +1,5 @@
+<%= turbo_stream.remove dom_id(@item, :toast) %>
+<%= turbo_stream.remove dom_id(@item, :hidden_tile) %>
+<%# Re-render the grid so the image returns to its original position %>
+<%= turbo_stream.replace dom_id(@post, :grid), partial: "posts/grid", locals: { post: @post } %>
+<%= turbo_stream.replace dom_id(@post, :hidden_count), partial: "posts/hidden_count", locals: { post: @post } %>

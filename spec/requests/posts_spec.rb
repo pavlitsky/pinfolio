@@ -32,13 +32,58 @@ RSpec.describe "/posts", type: :request do
 
       entry = Nokogiri::HTML(response.body).at_css("##{ActionView::RecordIdentifier.dom_id(post_record, :entry)}")
       expect(entry["data-controller"]).to eq("removal")
-      title_row = entry.at_css("h2").parent
+      # The row holding both the title and the post's delete form
+      title_row = entry.at_css("h2").ancestors("div").find { |div| div.at_css("form[action='#{post_path(post_record)}']") }
       expect(title_row.css("button").map { |button| button.text.strip }).to eq([ "×" ])
       button = title_row.at_css("form[action='#{post_path(post_record)}'] button")
       expect(button["aria-label"]).to eq("Delete post “Holiday photos”")
       expect(entry.at_css(".group\\/post")).to be_present
       expect(button["class"]).to include("opacity-0", "group-hover/post:opacity-100")
       expect(title_row.at_css("form input[name='_method']")["value"]).to eq("delete")
+    end
+
+    it "has a container for notifications such as Undo" do
+      get root_url
+
+      expect(Nokogiri::HTML(response.body).at_css("#toasts[aria-live='polite']")).to be_present
+    end
+
+    describe "hidden images" do
+      def page = Nokogiri::HTML(response.body)
+      def hidden_count = page.at_css("##{ActionView::RecordIdentifier.dom_id(post_record, :hidden_count)}")
+      def hidden_panel = page.at_css("##{ActionView::RecordIdentifier.dom_id(post_record, :hidden_panel)}")
+
+      context "when the post has none" do
+        it "shows no hidden count button" do
+          get root_url
+
+          expect(hidden_count).to be_present
+          expect(hidden_count.at_css("button")).to be_nil
+        end
+      end
+
+      context "when the post has hidden items" do
+        before { create_list(:item, 2, post: post_record, hidden_at: Time.current) }
+
+        it "shows how many next to the title, toggling the panel" do
+          get root_url
+
+          button = hidden_count.at_css("button")
+          expect(button.text.strip).to eq("2 hidden")
+          expect(button["data-action"]).to eq("toggle#toggle")
+          expect(button["aria-controls"]).to eq(hidden_panel["id"])
+        end
+
+        it "renders the panel closed, with a lazily loaded frame for the hidden images" do
+          get root_url
+
+          expect(hidden_panel["hidden"]).not_to be_nil
+          expect(hidden_panel["data-toggle-target"]).to eq("panel")
+          frame = hidden_panel.at_css("turbo-frame")
+          expect(frame["src"]).to eq(post_hidden_items_path(post_record))
+          expect(frame["loading"]).to eq("lazy")
+        end
+      end
     end
 
     it "lists posts newest first" do

@@ -7,4 +7,7 @@ class Post < ApplicationRecord
   def collect_pins_later = CollectPinsJob.perform_later(self)
 
   def pins_exhausted? = pinterest_bookmark == PinterestSearch::END_BOOKMARK
+
+  # Counts in Ruby so preloaded items (posts index) don't trigger another query
+  def hidden_items_count = items.to_a.count(&:hidden?)
 end

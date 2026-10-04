@@ -4,6 +4,7 @@ class Item < ApplicationRecord
 
   # Hidden items stay in the database so their urls are skipped when collecting more pins
   scope :visible, -> { where(hidden_at: nil) }
+  scope :hidden, -> { where.not(hidden_at: nil) }
 
   validates :url, presence: true, format: { with: URI::DEFAULT_PARSER.make_regexp(%w[http https]), allow_blank: true }
   validates :url, uniqueness: { scope: :post_id }
@@ -11,4 +12,6 @@ class Item < ApplicationRecord
   def hidden? = hidden_at.present?
 
   def hide! = update!(hidden_at: Time.current)
+
+  def unhide! = update!(hidden_at: nil)
 end

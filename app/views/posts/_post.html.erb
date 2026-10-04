@@ -1,6 +1,9 @@
-<div id="<%= dom_id post %>" class="group/post w-full my-5 space-y-3">
+<div id="<%= dom_id post %>" class="group/post w-full my-5 space-y-3" data-controller="toggle">
   <div class="flex items-center justify-between gap-4">
-    <h2 class="font-semibold text-[2.1rem] leading-tight text-gray-500"><%= post.title %></h2>
+    <div class="flex items-baseline gap-3 min-w-0">
+      <h2 class="font-semibold text-[2.1rem] leading-tight text-gray-500"><%= post.title %></h2>
+      <%= render "posts/hidden_count", post: %>
+    </div>
     <%= button_to "×", post, method: :delete,
           form_class: "shrink-0",
           class: "flex items-center justify-center size-8 rounded-full text-2xl leading-none text-gray-400 hover:text-red-600 hover:bg-red-50 focus-visible:outline-2 focus-visible:outline-red-600 cursor-pointer transition opacity-0 group-hover/post:opacity-100 focus-visible:opacity-100 [@media(hover:none)]:opacity-100",
@@ -8,22 +11,12 @@
           "aria-label": "Delete post “#{post.title}”" %>
   </div>
 
-  <div class="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-2">
-    <% post.items.select { |item| !item.hidden? && item.image.attached? }.each do |item| %>
-      <div id="<%= dom_id item, :tile %>" class="group relative aspect-square overflow-hidden rounded-md bg-gray-100"
-           data-controller="removal" data-removal-style-value="shrink" data-action="turbo:before-stream-render@document->removal#animate">
-        <%= link_to item.url, target: "_blank", rel: "noopener noreferrer", id: dom_id(item, :image), class: "block size-full hover:opacity-90" do %>
-          <%= image_tag rails_blob_path(item.image), alt: post.title, loading: "lazy", class: "size-full object-cover" %>
-        <% end %>
-        <%# Shade spreading from the top-right corner behind the × %>
-        <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgb(0_0_0/0.55),transparent_45%)] opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 [@media(hover:none)]:opacity-100"></div>
-        <%= button_to "×", hide_item_path(item), method: :patch,
-              form_class: "absolute top-0 right-0",
-              class: "flex items-center justify-center size-8 text-2xl leading-none text-white/90 hover:text-white cursor-pointer opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-2 focus-visible:outline-white [@media(hover:none)]:opacity-100",
-              title: "Hide image",
-              "aria-label": "Hide image" %>
-      </div>
+  <%# Hidden images, fetched the first time the panel is opened %>
+  <div id="<%= dom_id post, :hidden_panel %>" class="rounded-md bg-gray-50 p-3" hidden data-toggle-target="panel">
+    <%= turbo_frame_tag dom_id(post, :hidden_items), src: post_hidden_items_path(post), loading: :lazy do %>
+      <p class="text-sm text-gray-400">Loading hidden images…</p>
     <% end %>
-    <%= render "posts/add_more", post:, loading: false %>
   </div>
+
+  <%= render "posts/grid", post: %>
 </div>

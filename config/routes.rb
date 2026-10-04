@@ -1,9 +1,15 @@
 Rails.application.routes.draw do
   resources :items, only: [] do
-    patch :hide, on: :member
+    member do
+      patch :hide
+      patch :unhide
+    end
   end
   resources :posts, only: %i[ index create destroy ] do
-    resource :pins, only: :create, module: :posts
+    scope module: :posts do
+      resource :pins, only: :create
+      resources :hidden_items, only: :index
+    end
   end
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 

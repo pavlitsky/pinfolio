@@ -1,0 +1,7 @@
+<%= turbo_frame_tag dom_id(@post, :hidden_items) do %>
+  <div id="<%= dom_id @post, :hidden_grid %>" class="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-2">
+    <%# Shown only while the panel has no images, including after the last one is restored %>
+    <p class="hidden only:block col-span-full text-sm text-gray-400">No hidden images.</p>
+    <%= render partial: "items/hidden_tile", collection: @items, as: :item %>
+  </div>
+<% end %>

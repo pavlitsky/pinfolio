@@ -1,0 +1,4 @@
+<div id="<%= dom_id post, :grid %>" class="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-2">
+  <%= render partial: "items/tile", collection: post.items.select { |item| !item.hidden? && item.image.attached? }, as: :item %>
+  <%= render "posts/add_more", post:, loading: false %>
+</div>

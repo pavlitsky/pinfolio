@@ -1,0 +1,8 @@
+<div id="<%= dom_id item, :hidden_tile %>" class="group relative aspect-square overflow-hidden rounded-md bg-gray-100"
+     data-controller="removal" data-removal-style-value="shrink" data-action="turbo:before-stream-render@document->removal#animate">
+  <%= image_tag rails_blob_path(item.image), alt: item.post.title, loading: "lazy",
+        class: "size-full object-cover grayscale opacity-50 transition group-hover:grayscale-0 group-hover:opacity-100" if item.image.attached? %>
+  <%= button_to "Restore", unhide_item_path(item), method: :patch,
+        form_class: "absolute inset-0 flex items-center justify-center",
+        class: "rounded-full bg-black/60 px-3 py-1 text-xs font-medium text-white hover:bg-black/80 cursor-pointer opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-2 focus-visible:outline-white [@media(hover:none)]:opacity-100" %>
+</div>

@@ -76,6 +76,20 @@ RSpec.describe Item, type: :model do
       expect(Item.visible).to include(item)
     end
 
+    it "#unhide! makes a hidden item visible again" do
+      item.hide!
+      item.unhide!
+
+      expect(item.reload).not_to be_hidden
+      expect(Item.visible).to include(item)
+    end
+
+    it ".hidden returns only hidden items" do
+      hidden = create(:item, hidden_at: Time.current)
+
+      expect(Item.hidden).to eq([ hidden ])
+    end
+
     it "#hide! hides the item but keeps it in the database" do
       item.hide!
 

@@ -1,0 +1,8 @@
+<div id="<%= dom_id item, :toast %>"
+     class="pointer-events-auto flex items-center gap-4 rounded-full bg-gray-900 py-2 pl-5 pr-2 text-sm text-white shadow-lg"
+     data-controller="toast removal" data-removal-style-value="shrink"
+     data-action="mouseenter->toast#pause mouseleave->toast#resume focusin->toast#pause focusout->toast#resume turbo:before-stream-render@document->removal#animate">
+  <span>Image hidden</span>
+  <%= button_to "Undo", unhide_item_path(item), method: :patch,
+        class: "rounded-full px-3 py-1 font-medium text-blue-300 hover:bg-white/10 hover:text-blue-200 focus-visible:outline-2 focus-visible:outline-blue-300 cursor-pointer" %>
+</div>

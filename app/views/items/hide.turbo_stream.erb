@@ -1,1 +1,5 @@
 <%= turbo_stream.remove dom_id(@item, :tile) %>
+<%# Only applies when the post's hidden panel has been loaded %>
+<%= turbo_stream.append dom_id(@post, :hidden_grid), partial: "items/hidden_tile", locals: { item: @item } %>
+<%= turbo_stream.replace dom_id(@post, :hidden_count), partial: "posts/hidden_count", locals: { post: @post } %>
+<%= turbo_stream.append "toasts", partial: "items/hidden_toast", locals: { item: @item } %>

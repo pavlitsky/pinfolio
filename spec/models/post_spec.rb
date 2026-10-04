@@ -71,4 +71,14 @@ RSpec.describe Post, type: :model do
       expect(post.reload.items).to eq([ first, second ])
     end
   end
+
+  describe "#hidden_items_count" do
+    it "counts only hidden items" do
+      post = create(:post)
+      create(:item, post:)
+      create_list(:item, 2, post:, hidden_at: Time.current)
+
+      expect(post.hidden_items_count).to eq(2)
+    end
+  end
 end

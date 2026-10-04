@@ -1,0 +1,10 @@
+<span id="<%= dom_id post, :hidden_count %>">
+  <% if (count = post.hidden_items_count).positive? %>
+    <button type="button"
+            class="text-sm text-gray-400 hover:text-gray-600 underline decoration-dotted underline-offset-4 cursor-pointer"
+            aria-controls="<%= dom_id post, :hidden_panel %>"
+            data-toggle-target="button" data-action="toggle#toggle">
+      <%= count %> hidden
+    </button>
+  <% end %>
+</span>
