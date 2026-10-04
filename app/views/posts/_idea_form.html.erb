@@ -1,0 +1,11 @@
+<%= form_with(model: post, id: "idea_form", class: "mb-8") do |form| %>
+  <%= form.text_field :title,
+        placeholder: "The idea is...",
+        autofocus: true,
+        autocomplete: "off",
+        "aria-label": "The idea is...",
+        class: ["block w-full shadow-sm rounded-md border px-4 py-3 text-lg", { "border-gray-400 focus:outline-blue-600": post.errors[:title].none?, "border-red-400 focus:outline-red-600": post.errors[:title].any? }] %>
+  <% post.errors.full_messages_for(:title).each do |message| %>
+    <p class="mt-2 text-red-500 text-sm"><%= message %></p>
+  <% end %>
+<% end %>

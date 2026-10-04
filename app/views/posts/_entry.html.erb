@@ -1,0 +1,4 @@
+<div id="<%= dom_id post, :entry %>" class="pb-5" data-controller="removal" data-action="turbo:before-stream-render@document->removal#animate">
+  <%= turbo_stream_from post %>
+  <%= render post %>
+</div>

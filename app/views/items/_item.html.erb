@@ -1,0 +1,14 @@
+<div id="<%= dom_id item %>" class="w-full sm:w-auto my-5 space-y-5">
+  <div>
+    <strong class="block font-medium mb-1">Post:</strong>
+    <%= item.post.title %>
+  </div>
+  <div>
+    <strong class="block font-medium mb-1">Url:</strong>
+    <%= link_to item.url, item.url, class: "text-gray-700 underline hover:no-underline break-all" %>
+  </div>
+  <div>
+    <strong class="block font-medium mb-1">Image:</strong>
+    <%= link_to item.image.filename, item.image, class: "text-gray-700 underline hover:no-underline" if item.image.attached? %>
+  </div>
+</div>

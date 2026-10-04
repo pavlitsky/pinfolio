@@ -1,0 +1,23 @@
+<div id="<%= dom_id post %>" class="w-full my-5 space-y-3">
+  <div class="flex items-center justify-between gap-4">
+    <h2 class="font-bold text-2xl"><%= post.title %></h2>
+    <%= button_to "×", post, method: :delete,
+          form_class: "shrink-0",
+          class: "flex items-center justify-center size-8 rounded-full text-2xl leading-none text-gray-400 hover:text-red-600 hover:bg-red-50 focus-visible:outline-2 focus-visible:outline-red-600 cursor-pointer transition-colors",
+          title: "Delete post",
+          "aria-label": "Delete post “#{post.title}”" %>
+  </div>
+
+  <% items_with_images = post.items.select { |item| item.image.attached? } %>
+  <% if items_with_images.any? %>
+    <div class="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-2">
+      <% items_with_images.each do |item| %>
+        <%= link_to item.url, target: "_blank", rel: "noopener noreferrer", id: dom_id(item, :image), class: "block aspect-square overflow-hidden rounded-md bg-gray-100 hover:opacity-90" do %>
+          <%= image_tag item.image, alt: post.title, loading: "lazy", class: "w-full h-full object-cover" %>
+        <% end %>
+      <% end %>
+    </div>
+  <% else %>
+    <p class="text-gray-500">No images yet.</p>
+  <% end %>
+</div>

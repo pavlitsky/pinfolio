@@ -1,0 +1,83 @@
+{
+  "resource_response": {
+    "status": "success",
+    "http_status": 200,
+    "data": {
+      "results": [
+        {
+          "type": "pin",
+          "id": "1001",
+          "is_promoted": false,
+          "title": "Pin 1",
+          "images": {
+            "236x": {
+              "url": "https://i.pinimg.com/236x/1.jpg"
+            },
+            "736x": {
+              "url": "https://i.pinimg.com/736x/1.jpg"
+            },
+            "orig": {
+              "url": "https://i.pinimg.com/originals/1.jpg"
+            }
+          }
+        },
+        {
+          "type": "pin",
+          "id": "1002",
+          "is_promoted": true,
+          "title": "Pin 2",
+          "images": {
+            "236x": {
+              "url": "https://i.pinimg.com/236x/2.jpg"
+            },
+            "736x": {
+              "url": "https://i.pinimg.com/736x/2.jpg"
+            },
+            "orig": {
+              "url": "https://i.pinimg.com/originals/2.jpg"
+            }
+          }
+        },
+        {
+          "type": "story",
+          "id": "9999"
+        },
+        {
+          "type": "pin",
+          "id": "1003",
+          "is_promoted": false,
+          "title": "Pin 3",
+          "images": {
+            "736x": {
+              "url": "https://i.pinimg.com/736x/3.jpg"
+            }
+          }
+        },
+        {
+          "type": "pin",
+          "id": "1004",
+          "is_promoted": false,
+          "title": "Pin 4",
+          "images": {}
+        },
+        {
+          "type": "pin",
+          "id": "1005",
+          "is_promoted": false,
+          "title": "Pin 5",
+          "images": {
+            "236x": {
+              "url": "https://i.pinimg.com/236x/5.jpg"
+            },
+            "736x": {
+              "url": "https://i.pinimg.com/736x/5.jpg"
+            },
+            "orig": {
+              "url": "https://i.pinimg.com/originals/5.jpg"
+            }
+          }
+        }
+      ]
+    }
+  }
+}
