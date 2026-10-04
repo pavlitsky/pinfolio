@@ -21,7 +21,7 @@ Then curate the board:
 * **More** – the "+" tile at the end of the grid fetches the next batch of
   images. When Pinterest has no more results, it shows "No more".
 * **Rename** – click a post's title to edit it in place. Enter saves, Esc cancels.
-  Renaming starts a new Pinterest search for the new title.
+  After a rename, the "+" tile searches Pinterest for the new title from the first page.
 * **Delete** – remove a whole post with the × next to its title.
 
 Changes made in one browser tab appear in your other open tabs too.
