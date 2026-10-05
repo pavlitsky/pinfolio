@@ -5,30 +5,37 @@ Pinfolio is a small mood-board app for collecting visual inspiration.
 ## The idea
 
 Type an idea into the search field ("scandinavian kitchen", "brutalist posters",
-"autumn wedding palette"…) and press Enter. Pinfolio creates a **post** for that idea
-and goes to Pinterest in the background to collect matching images. The images
+"autumn wedding palette"…), pick a source with the **Pinterest | Flickr** switcher
+on the right of the field, and press Enter. Pinfolio creates a **post** for that idea
+and goes to the chosen source in the background to collect matching images. The images
 show up in the post's grid as they download, so you don't need to reload the page.
+
+Each post keeps the source it was created with. The switcher remembers your last
+choice (in a cookie), so it stays selected across page reloads.
 
 Then curate the board:
 
 * **Preview** – click a tile to open a large preview. Use ← / → to move between
-  images and Esc to close. Clicking the image opens the original pin on Pinterest.
+  images and Esc to close. Clicking the image opens the original pin on Pinterest
+  or photo page on Flickr.
 * **Hide** – remove images you don't like with the × on a tile (or "Hide" in the
   preview). A toast with **Undo** appears. Hidden images are not deleted. They
   move to the post's "N hidden" panel, where you can restore them, and they are
   never collected for that post again.
 * **Reorder** – drag tiles to rearrange the grid. The order is saved.
 * **More** – the "+" tile at the end of the grid fetches the next batch of
-  images. When Pinterest has no more results, it shows "No more".
+  images from the post's source. When the source has no more results, it shows "No more".
 * **Rename** – click a post's title to edit it in place. Enter saves, Esc cancels.
-  After a rename, the "+" tile searches Pinterest for the new title from the first page.
+  After a rename, the "+" tile searches the post's source for the new title from the first page.
 * **Delete** – remove a whole post with the × next to its title.
 
 Changes made in one browser tab appear in your other open tabs too.
 
-> Pinterest search uses the unofficial JSON endpoint behind pinterest.com. It is
-> undocumented and may change at any time, so Pinfolio is meant for occasional
-> personal use.
+> Pinterest search uses the unofficial JSON endpoint behind pinterest.com. Flickr
+> search calls the official `flickr.photos.search` API method, but authenticates with
+> the public "site key" that flickr.com embeds in its own pages instead of an API key
+> of its own (those now require Flickr Pro). Both are undocumented ways in and may
+> change at any time, so Pinfolio is meant for occasional personal use.
 
 ## Technologies
 
@@ -53,20 +60,31 @@ Changes made in one browser tab appear in your other open tabs too.
 
 ### Domain
 
-* `Post` (`app/models/post.rb`) – one idea. It has a title, the Pinterest pagination
-  bookmark, and `pins_requested_at`, which drives the "+" tile's loading spinner.
+* `Post` (`app/models/post.rb`) – one idea. It has a title, a `source` enum
+  (`pinterest` or `flickr`, also enforced by a check constraint), the source's
+  pagination `search_cursor`, and `pins_requested_at`, which drives the "+" tile's
+  loading spinner. `search` returns the source's search service, and
   `reorder_items!` saves a new drag-and-drop order.
-* `Item` (`app/models/item.rb`) – one collected pin: its Pinterest URL, a grid
+* `Item` (`app/models/item.rb`) – one collected image: its Pinterest pin or Flickr
+  photo page URL, a grid
   `position`, a `hidden_at` timestamp (soft hide) and an attached `image` with
   preprocessed `:tile` (400×400) and `:preview` (≤1600px) variants.
 
 ### Services and jobs
 
+* `ImageSearch` (`app/services/image_search.rb`) – the interface the searches share:
+  `call(query, cursor:)` returns a `Page` of `Result`s (`Data` value objects) plus the
+  cursor for the next page (`nil` when there are no more), and a common HTTP helper
+  that raises `ImageSearch::Error` on failures.
 * `PinterestSearch` (`app/services/pinterest_search.rb`) – fetches one page of pin
-  results and returns `Data` value objects (`Result`, `Page`).
+  results; the cursor is Pinterest's bookmark.
+* `FlickrSearch` (`app/services/flickr_search.rb`) – fetches one page of photos
+  (largest size up to 2048px); the cursor is the next page number. The site key is
+  scraped from flickr.com's search page, cached for an hour (Solid Cache in
+  production), and re-scraped once when Flickr rejects it as invalid.
 * `WebImage` (`app/services/web_image.rb`) – keeps browser-friendly formats as they
   are and converts anything else (e.g. HEIC) to JPEG with libvips.
-* `CollectPinsJob` – pages through the search starting from the post's bookmark,
+* `CollectPinsJob` – pages through the post's source starting from its cursor,
   creates up to 10 new items and skips URLs the post already has (hidden ones
   included). It enqueues one `AttachImageJob` per item.
 * `AttachImageJob` – downloads the image, checks its type and size, runs it through
@@ -98,7 +116,7 @@ works without JavaScript.
 
 | Controller / action           | Turbo Stream response                                             | What the user sees |
 | ----------------------------- | ----------------------------------------------------------------- | ------------------ |
-| `PostsController#create`      | `create.turbo_stream.erb`: `replace` the idea form with an empty one, `prepend` the new post to `#posts` | The new post appears at the top and the search field is cleared |
+| `PostsController#create`      | `create.turbo_stream.erb`: `replace` the idea form with an empty one (keeping the chosen source), `prepend` the new post to `#posts` | The new post appears at the top and the search field is cleared |
 | `PostsController#create` (invalid) | inline `turbo_stream.replace "idea_form"` with errors, status 422 | Validation message under the search field |
 | `PostsController#destroy`     | `destroy.turbo_stream.erb`: `remove` the post entry               | The post card slides out (animated by `removal`) |
 | `ItemsController#hide`        | `hide.turbo_stream.erb`: `remove` the tile, `append` it to the hidden grid, `replace` the hidden count, `append` an Undo toast to `#toasts` | The tile shrinks away and the "Image hidden · Undo" toast appears |
@@ -109,7 +127,7 @@ works without JavaScript.
 
 | Frame                          | Controller                         | Purpose |
 | ------------------------------ | ---------------------------------- | ------- |
-| `modal` (in the layout's `<dialog>`) | `ItemsController#show`       | Tiles link with `data-turbo-frame="modal"`, so the large preview with previous/next links loads into the dialog. Opened outside a frame (e.g. in a new tab), `show` redirects to the pin on Pinterest (`turbo_frame_request?`). |
+| `modal` (in the layout's `<dialog>`) | `ItemsController#show`       | Tiles link with `data-turbo-frame="modal"`, so the large preview with previous/next links loads into the dialog. Opened outside a frame (e.g. in a new tab), `show` redirects to the pin on Pinterest or photo on Flickr (`turbo_frame_request?`). |
 | `post_N_title`                 | `Posts::TitlesController#show/edit/update` | In-place title editing: the title link loads the edit form into the same frame, and a save redirects back to `show`. |
 | `post_N_hidden_items` (`loading: :lazy`) | `Posts::HiddenItemsController#index` | The hidden-images panel is fetched only the first time it is opened. |
 
@@ -129,6 +147,7 @@ All controllers live in `app/javascript/controllers/` and are loaded via import 
 | `toggle`      | `posts/_post.html.erb`, `posts/_hidden_count.html.erb` | Shows and hides the hidden-images panel. Keeps `aria-expanded` in sync when Turbo Streams re-render the button and when morphing would reset it (`turbo:before-morph-attribute`). |
 | `inline-edit` | `posts/titles/edit.html.erb`                   | Focuses the title input. Enter saves, Esc cancels, blur saves only if the value changed. Marks the frame `data-turbo-permanent` while editing so a refresh doesn't discard what you typed. |
 | `morph-skip`  | `posts/_idea_form.html.erb`                    | Cancels `turbo:before-morph-element` for the search form so refreshes don't wipe what you're typing, while Turbo Streams can still replace it. |
+| `source-switcher` | `posts/_idea_form.html.erb`                | Saves the source chosen in the Pinterest \| Flickr switcher to a `post_source` cookie; `PostsController#index` preselects it on the next page load. |
 
 ### Other Rails features
 
@@ -137,7 +156,9 @@ All controllers live in `app/javascript/controllers/` and are loaded via import 
 * `params.expect` for strong parameters.
 * `Data.define` value objects in the services.
 * Database constraints (`null: false`, foreign keys, a unique index on
-  `[post_id, url]`) alongside model validations.
+  `[post_id, url]`, a check constraint on `posts.source`) alongside model validations.
+* A string-backed `enum :source` with `validate: true`, so unknown sources are
+  validation errors rather than exceptions.
 * `allow_browser versions: :modern` and `stale_when_importmap_changes` in
   `ApplicationController`.
 
@@ -189,5 +210,5 @@ bin/kamal console                # Rails console on the droplet
 ```
 
 The app has no authentication, so anyone with its URL can change and delete posts.
-Pinterest may also block or challenge requests from data-center IPs; check that
-"+" collects images on the droplet before relying on it.
+Pinterest and Flickr may also block or challenge requests from data-center IPs; check
+that "+" collects images from both sources on the droplet before relying on it.
