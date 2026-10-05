@@ -55,6 +55,12 @@ RSpec.describe "/posts", type: :request do
       end
     end
 
+    it "uses the app name as the page title" do
+      get root_url
+
+      expect(Nokogiri::HTML(response.body).at_css("title").text).to eq("Pinfolio")
+    end
+
     it "shows the app name linking home in the header, outside the idea form" do
       get root_url
 
