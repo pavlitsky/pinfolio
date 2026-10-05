@@ -12,6 +12,10 @@
     <%= link_to "Pinfolio", root_path,
           class: "block mb-3 px-4 font-display text-4xl text-gray-800 hover:text-gray-900 sm:absolute sm:inset-y-0 sm:left-5 sm:mb-0 sm:flex sm:items-center sm:px-0" %>
     <%= render "idea_form", post: @post %>
+    <%# Right-aligned: in the app name's row on phones, centred beside the search on wider screens %>
+    <div class="absolute right-4 top-4 flex h-10 items-center sm:inset-y-0 sm:right-5 sm:h-auto">
+      <%= render "about" %>
+    </div>
   </div>
 
   <div id="posts" class="min-w-full space-y-5">

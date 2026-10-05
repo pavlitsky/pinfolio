@@ -63,6 +63,17 @@ RSpec.describe "/posts", type: :request do
       expect(link.ancestors("form#idea_form")).to be_empty
     end
 
+    it "explains the app behind a \"What's this?\" button in the header" do
+      get root_url
+
+      hint = Nokogiri::HTML(response.body).at_css("#about[data-controller='hint']")
+      button = hint.at_css("button[data-action='hint#toggle']")
+      expect(button.text.strip).to eq("What's this?")
+      expect(button["aria-expanded"]).to eq("false")
+      expect(hint.at_css("##{button['aria-controls']}").text).to include("Pinterest", "Flickr")
+      expect(hint.ancestors("form#idea_form")).to be_empty
+    end
+
     it "offers a delete (×) button in the post's title row" do
       get root_url
 

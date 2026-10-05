@@ -147,6 +147,7 @@ All controllers live in `app/javascript/controllers/` and are loaded via import 
 | `toggle`      | `posts/_post.html.erb`, `posts/_hidden_count.html.erb` | Shows and hides the hidden-images panel. Keeps `aria-expanded` in sync when Turbo Streams re-render the button and when morphing would reset it (`turbo:before-morph-attribute`). |
 | `inline-edit` | `posts/titles/edit.html.erb`                   | Focuses the title input. Enter saves, Esc cancels, blur saves only if the value changed. Marks the frame `data-turbo-permanent` while editing so a refresh doesn't discard what you typed. |
 | `morph-skip`  | `posts/_idea_form.html.erb`                    | Cancels `turbo:before-morph-element` for the search form so refreshes don't wipe what you're typing, while Turbo Streams can still replace it. |
+| `hint`        | `posts/_about.html.erb`                        | The "What's this?" panel in the header: toggles it on click or tap and closes it on an outside click or Esc. On devices with a mouse, CSS (`group-hover:`) also shows it on hover. |
 | `source-switcher` | `posts/_idea_form.html.erb`                | Saves the source chosen in the Pinterest \| Flickr switcher to a `post_source` cookie; `PostsController#index` preselects it on the next page load. |
 
 ### Other Rails features

@@ -1,0 +1,23 @@
+<%# "What's this?" hint: shown on hover with a mouse, toggled by click or tap (hint controller);
+    permanent so page refreshes don't close it while it's open %>
+<div id="about" class="group relative" data-turbo-permanent
+     data-controller="hint" data-action="click@window->hint#closeOnClickOutside keydown.esc@window->hint#close">
+  <button type="button" class="cursor-pointer text-sm text-gray-500 underline decoration-dotted underline-offset-4 hover:text-gray-800 focus-visible:outline-2 focus-visible:outline-gray-500"
+          aria-expanded="false" aria-controls="about_panel"
+          data-hint-target="button" data-action="hint#toggle">
+    What's this?
+  </button>
+
+  <%# Padding instead of a margin above the card, so moving the mouse onto it keeps the hover %>
+  <div id="about_panel" class="invisible absolute right-0 top-full z-20 w-80 max-w-[calc(100vw-2rem)] pt-2 opacity-0 transition-opacity group-hover:visible group-hover:opacity-100 group-has-focus-visible:visible group-has-focus-visible:opacity-100 group-data-open:visible group-data-open:opacity-100">
+    <div class="space-y-3 rounded-lg bg-white p-4 text-sm leading-relaxed text-gray-600 shadow-lg ring-1 ring-gray-200">
+      <p><strong class="font-semibold text-gray-800">Pinfolio</strong> collects visual inspiration into mood boards.</p>
+      <ol class="list-decimal space-y-1 pl-5">
+        <li>Type an idea, e.g. “scandinavian kitchen”, choose <strong class="font-medium text-gray-800">Pinterest</strong> or <strong class="font-medium text-gray-800">Flickr</strong> in the search field, and press Enter.</li>
+        <li>A post is created and matching images are collected in the background. They appear as they download.</li>
+        <li>Curate the board: click an image to preview it, × to hide it, drag to reorder, “+” for more, and click the title to rename it.</li>
+      </ol>
+      <p class="text-gray-400">There are no accounts: anyone with the link sees and can edit every post.</p>
+    </div>
+  </div>
+</div>
