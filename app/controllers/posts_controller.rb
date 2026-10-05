@@ -13,7 +13,7 @@ class PostsController < ApplicationController
       if @post.save
         @post.collect_pins_later
         format.turbo_stream
-        format.html { redirect_to root_path, notice: "Post was successfully created. Collecting images from Pinterest…" }
+        format.html { redirect_to root_path, notice: "Post was successfully created. Collecting images from #{@post.source_name}…" }
       else
         format.turbo_stream { render turbo_stream: turbo_stream.replace("idea_form", partial: "posts/idea_form", locals: { post: @post }), status: :unprocessable_content }
         format.html do
@@ -42,6 +42,6 @@ class PostsController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def post_params
-      params.expect(post: [ :title ])
+      params.expect(post: [ :title, :source ])
     end
 end

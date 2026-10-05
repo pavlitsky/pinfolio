@@ -1,4 +1,4 @@
-# Searches Pinterest for the post's title, continuing from the post's saved bookmark,
+# Searches the post's source for its title, continuing from the post's saved cursor,
 # and creates up to `limit` new items, skipping urls the post already has (hidden ones too).
 # Each new item's image is downloaded in a separate job.
 class CollectPinsJob < ApplicationJob
@@ -13,7 +13,7 @@ class CollectPinsJob < ApplicationJob
     MAX_PAGES.times do
       break if post.pins_exhausted?
 
-      page = PinterestSearch.call(post.title, bookmark: post.pinterest_bookmark)
+      page = post.search.call(post.title, cursor: post.search_cursor)
       page.results.each do |result|
         break if collected >= limit
 
@@ -23,7 +23,7 @@ class CollectPinsJob < ApplicationJob
         AttachImageJob.perform_later(item, result.image_url)
         collected += 1
       end
-      post.update!(pinterest_bookmark: page.bookmark.presence || PinterestSearch::END_BOOKMARK)
+      post.update!(search_cursor: page.cursor || Post::END_CURSOR)
 
       break if collected >= limit
     end

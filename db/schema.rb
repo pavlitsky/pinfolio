@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_04_165801) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_05_040425) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -54,8 +54,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_04_165801) do
     t.string "title", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.text "pinterest_bookmark"
+    t.text "search_cursor"
     t.datetime "pins_requested_at"
+    t.string "source", default: "pinterest", null: false
+    t.check_constraint "source IN ('pinterest', 'flickr')", name: "posts_source_check"
   end
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"

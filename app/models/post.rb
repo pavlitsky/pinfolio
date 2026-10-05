@@ -1,6 +1,12 @@
 class Post < ApplicationRecord
   # Pin collection running longer than this is treated as finished (e.g. its job was lost)
   PINS_REQUEST_TIMEOUT = 2.minutes
+  # Saved as the search cursor once the source has no more pages
+  END_CURSOR = "-end-".freeze
+  SEARCHES = { "pinterest" => PinterestSearch, "flickr" => FlickrSearch }.freeze
+
+  # Where the post's images are collected from
+  enum :source, { pinterest: "pinterest", flickr: "flickr" }, default: :pinterest, validate: true
 
   has_many :items, -> { order(:position, :id) }, dependent: :destroy
 
@@ -10,11 +16,11 @@ class Post < ApplicationRecord
 
   validates :title, presence: true
 
-  # A renamed post searches Pinterest for its new title from the first page;
+  # A renamed post searches its source for the new title from the first page;
   # already-collected (and hidden) pins are still skipped as duplicates
-  before_update :restart_pinterest_search, if: :will_save_change_to_title?
+  before_update :restart_search, if: :will_save_change_to_title?
 
-  # Collects the next batch of pins, continuing from pinterest_bookmark
+  # Collects the next batch of pins, continuing from search_cursor
   def collect_pins_later
     update!(pins_requested_at: Time.current)
     CollectPinsJob.perform_later(self)
@@ -22,7 +28,14 @@ class Post < ApplicationRecord
 
   def collecting_pins? = pins_requested_at.present? && pins_requested_at.after?(PINS_REQUEST_TIMEOUT.ago)
 
-  def pins_exhausted? = pinterest_bookmark == PinterestSearch::END_BOOKMARK
+  def pins_exhausted? = search_cursor == END_CURSOR
+
+  def search = SEARCHES.fetch(source)
+
+  # "Pinterest", "Flickr"
+  def source_name = self.class.source_name(source)
+
+  def self.source_name(source) = source.to_s.capitalize
 
   # Ids of the items shown in the post's grid, in grid order
   def gallery_item_ids = items.visible.joins(:image_attachment).ids
@@ -44,7 +57,7 @@ class Post < ApplicationRecord
   end
 
   private
-    def restart_pinterest_search
-      self.pinterest_bookmark = nil
+    def restart_search
+      self.search_cursor = nil
     end
 end

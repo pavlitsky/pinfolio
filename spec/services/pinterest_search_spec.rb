@@ -19,7 +19,7 @@ RSpec.describe PinterestSearch do
       expect(requested_options["query"]).to eq("cozy cabin")
     end
 
-    context "without a bookmark" do
+    context "without a cursor" do
       it "requests the first page" do
         described_class.call("cozy cabin")
 
@@ -27,23 +27,23 @@ RSpec.describe PinterestSearch do
       end
     end
 
-    context "with a bookmark" do
+    context "with a cursor (Pinterest's bookmark)" do
       it "requests the page after it" do
-        described_class.call("cozy cabin", bookmark: "abc")
+        described_class.call("cozy cabin", cursor: "abc")
 
         expect(requested_options["bookmarks"]).to eq([ "abc" ])
       end
     end
 
-    it "returns the bookmark for the next page" do
-      expect(described_class.call("cozy cabin").bookmark).to eq("next-page-bookmark")
+    it "returns the bookmark as the cursor for the next page" do
+      expect(described_class.call("cozy cabin").cursor).to eq("next-page-bookmark")
     end
 
     it "returns pin links with their largest available image" do
       expect(described_class.call("cozy cabin").results).to eq([
-        described_class::Result.new(url: "https://www.pinterest.com/pin/1001/", image_url: "https://i.pinimg.com/originals/1.jpg"),
-        described_class::Result.new(url: "https://www.pinterest.com/pin/1003/", image_url: "https://i.pinimg.com/736x/3.jpg"),
-        described_class::Result.new(url: "https://www.pinterest.com/pin/1005/", image_url: "https://i.pinimg.com/originals/5.jpg")
+        ImageSearch::Result.new(url: "https://www.pinterest.com/pin/1001/", image_url: "https://i.pinimg.com/originals/1.jpg"),
+        ImageSearch::Result.new(url: "https://www.pinterest.com/pin/1003/", image_url: "https://i.pinimg.com/736x/3.jpg"),
+        ImageSearch::Result.new(url: "https://www.pinterest.com/pin/1005/", image_url: "https://i.pinimg.com/originals/5.jpg")
       ])
     end
 
@@ -56,8 +56,8 @@ RSpec.describe PinterestSearch do
     context "when Pinterest returns no results" do
       let(:body) { { resource_response: { data: { results: [] }, bookmark: "-end-" } }.to_json }
 
-      it "returns an empty page with the end bookmark" do
-        expect(described_class.call("cozy cabin")).to eq(described_class::Page.new(results: [], bookmark: described_class::END_BOOKMARK))
+      it "returns an empty last page" do
+        expect(described_class.call("cozy cabin")).to eq(ImageSearch::Page.new(results: [], cursor: nil))
       end
     end
 
@@ -65,7 +65,7 @@ RSpec.describe PinterestSearch do
       before { stub_request(:get, endpoint).to_return(status: 403) }
 
       it "raises an error" do
-        expect { described_class.call("cozy cabin") }.to raise_error(described_class::Error, /HTTP 403/)
+        expect { described_class.call("cozy cabin") }.to raise_error(ImageSearch::Error, /HTTP 403/)
       end
     end
 
@@ -73,7 +73,7 @@ RSpec.describe PinterestSearch do
       let(:body) { "<html>blocked</html>" }
 
       it "raises an error" do
-        expect { described_class.call("cozy cabin") }.to raise_error(described_class::Error)
+        expect { described_class.call("cozy cabin") }.to raise_error(ImageSearch::Error)
       end
     end
 
@@ -81,7 +81,7 @@ RSpec.describe PinterestSearch do
       before { stub_request(:get, endpoint).to_timeout }
 
       it "raises an error" do
-        expect { described_class.call("cozy cabin") }.to raise_error(described_class::Error)
+        expect { described_class.call("cozy cabin") }.to raise_error(ImageSearch::Error)
       end
     end
   end

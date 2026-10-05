@@ -52,6 +52,15 @@ RSpec.describe "/items", type: :request do
         expect(link.at_css("img")["src"]).to start_with("/rails/active_storage/")
       end
 
+      it "names the post's source in the links to the original" do
+        get(item_url(items[1]), headers: frame_headers)
+        expect(frame.text).to include("Open on Pinterest")
+
+        post_record.update!(source: :flickr)
+        get(item_url(items[1]), headers: frame_headers)
+        expect(frame.text).to include("Open on Flickr")
+      end
+
       it "shows the resized preview variant rather than the original" do
         get(item_url(items[1]), headers: frame_headers)
 

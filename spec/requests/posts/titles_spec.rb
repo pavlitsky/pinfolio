@@ -3,7 +3,7 @@ require "rails_helper"
 RSpec.describe "/posts/:post_id/title", type: :request do
   include ActionView::RecordIdentifier
 
-  let!(:post_record) { create(:post, title: "cozy cabin", pinterest_bookmark: "b3") }
+  let!(:post_record) { create(:post, title: "cozy cabin", search_cursor: "b3") }
   let(:frame_headers) { { "Turbo-Frame" => dom_id(post_record, :title) } }
 
   def frame = Nokogiri::HTML(response.body).at_css("turbo-frame##{dom_id(post_record, :title)}")
@@ -41,10 +41,10 @@ RSpec.describe "/posts/:post_id/title", type: :request do
         expect(post_record.reload.title).to eq("snowy cabin")
       end
 
-      it "restarts the Pinterest search for the new title" do
+      it "restarts the search for the new title" do
         patch(post_title_url(post_record), params: { post: { title: "snowy cabin" } }, headers: frame_headers)
 
-        expect(post_record.reload.pinterest_bookmark).to be_nil
+        expect(post_record.reload.search_cursor).to be_nil
       end
 
       it "keeps the post's items" do

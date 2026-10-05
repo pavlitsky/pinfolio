@@ -1,0 +1,31 @@
+{
+  "photos": {
+    "page": 1,
+    "pages": 3,
+    "perpage": 25,
+    "total": 60,
+    "photo": [
+      {
+        "id": "1001",
+        "owner": "11111111@N01",
+        "title": "Cabin 1",
+        "url_k": "https://live.staticflickr.com/65535/1001_a_k.jpg",
+        "url_h": "https://live.staticflickr.com/65535/1001_a_h.jpg",
+        "url_l": "https://live.staticflickr.com/65535/1001_a_b.jpg"
+      },
+      {
+        "id": "1002",
+        "owner": "22222222@N02",
+        "title": "Cabin 2",
+        "url_l": "https://live.staticflickr.com/65535/1002_b_b.jpg",
+        "url_c": "https://live.staticflickr.com/65535/1002_b_c.jpg"
+      },
+      {
+        "id": "1003",
+        "owner": "33333333@N03",
+        "title": "No sizes"
+      }
+    ]
+  },
+  "stat": "ok"
+}

@@ -9,7 +9,7 @@
         <span class="<%= arrow_class %> opacity-20" aria-hidden="true">‹</span>
       <% end %>
 
-      <%= link_to @item.url, target: "_blank", rel: "noopener noreferrer", title: "Open on Pinterest" do %>
+      <%= link_to @item.url, target: "_blank", rel: "noopener noreferrer", title: "Open on #{@post.source_name}" do %>
         <%= image_tag rails_representation_path(@item.image.variant(:preview)), alt: @post.title,
               class: "max-h-[78vh] max-w-[calc(100vw-9rem)] rounded-md object-contain shadow-2xl" if @item.image.attached? %>
       <% end %>
@@ -26,7 +26,7 @@
       <span class="text-white/50">
         <%= @post.title %><% if @position %> · <%= @position + 1 %> of <%= @total %><% end %>
       </span>
-      <%= link_to "Open on Pinterest ↗", @item.url, target: "_blank", rel: "noopener noreferrer", class: "hover:text-white" %>
+      <%= link_to "Open on #{@post.source_name} ↗", @item.url, target: "_blank", rel: "noopener noreferrer", class: "hover:text-white" %>
       <%= button_to "Hide", hide_item_path(@item), method: :patch,
             class: "hover:text-white cursor-pointer",
             form: { data: { action: "turbo:submit-end->modal#advance" } } %>

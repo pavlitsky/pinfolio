@@ -24,7 +24,17 @@ RSpec.describe "/posts", type: :request do
 
       input = Nokogiri::HTML(response.body).at_css("form#idea_form input[name='post[title]']")
       expect(input["placeholder"]).to eq("Search anything...")
-      expect(response.body).not_to include("<label", "New post")
+      expect(response.body).not_to include("New post")
+      expect(Nokogiri::HTML(response.body).at_css("label[for='post_title']")).to be_nil
+    end
+
+    it "shows the source switcher inside the idea form, with Pinterest selected" do
+      get root_url
+
+      form = Nokogiri::HTML(response.body).at_css("form#idea_form")
+      radios = form.css("input[type=radio][name='post[source]']")
+      expect(radios.map { |radio| [ radio["value"], radio.parent.text.strip ] }).to eq([ %w[pinterest Pinterest], %w[flickr Flickr] ])
+      expect(radios.select { |radio| radio["checked"] }.map { |radio| radio["value"] }).to eq([ "pinterest" ])
     end
 
     it "shows the app name linking home in the header, outside the idea form" do
@@ -290,8 +300,8 @@ RSpec.describe "/posts", type: :request do
         end
       end
 
-      context "when Pinterest has no more pages" do
-        before { post_record.update!(pinterest_bookmark: PinterestSearch::END_BOOKMARK) }
+      context "when the source has no more pages" do
+        before { post_record.update!(search_cursor: Post::END_CURSOR) }
 
         it "shows No more instead of a button" do
           get root_url
@@ -341,6 +351,25 @@ RSpec.describe "/posts", type: :request do
         post posts_url, params: { post: valid_attributes }
         expect(CollectPinsJob).to have_been_enqueued.with(Post.last)
       end
+
+      it "searches Pinterest by default" do
+        post posts_url, params: { post: valid_attributes }
+        expect(Post.last).to be_pinterest
+      end
+
+      it "searches the chosen source" do
+        post posts_url, params: { post: valid_attributes.merge(source: "flickr") }
+
+        expect(Post.last).to be_flickr
+        expect(flash[:notice]).to include("Collecting images from Flickr")
+      end
+    end
+
+    context "with an unknown source" do
+      it "does not create a new Post" do
+        expect { post posts_url, params: { post: valid_attributes.merge(source: "instagram") } }.not_to change(Post, :count)
+        expect(response).to have_http_status(:unprocessable_content)
+      end
     end
 
     context "with invalid parameters" do
@@ -380,6 +409,13 @@ RSpec.describe "/posts", type: :request do
           expect(streams.map { |stream| [ stream["action"], stream["target"] ] }).to eq([ %w[replace idea_form], %w[prepend posts] ])
           expect(streams.first.at_css("template input[name='post[title]']")["value"]).to be_nil
           expect(streams.last.inner_html).to include("My post")
+        end
+
+        it "keeps the chosen source selected in the reset input" do
+          post(posts_url, params: { post: valid_attributes.merge(source: "flickr") }, headers:)
+
+          form = Nokogiri::HTML(response.body).at_css("turbo-stream[target=idea_form] template")
+          expect(form.at_css("input[name='post[source]'][checked]")["value"]).to eq("flickr")
         end
       end
 

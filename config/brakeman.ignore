@@ -2,23 +2,23 @@
   "ignored_warnings": [
     {
       "warning_type": "Cross-Site Scripting",
-      "fingerprint": "27ead82867eb2ea54fe4c7aa759dda2fd01d2dff9bbd9e14fffff1df92204fff",
+      "fingerprint": "0da07e84bd16a204dbf67f51cf3164621e0780953cab95464b6fd50b01f5ad49",
       "check_name": "LinkToHref",
       "message": "Potentially unsafe model attribute in `link_to` href",
       "file": "app/views/items/show.html.erb",
       "line": 12,
-      "code": "link_to(Item.find(params.expect(:id)).url, :target => \"_blank\", :rel => \"noopener noreferrer\", :title => \"Open on Pinterest\")",
-      "note": "Item#url is validated as a full http(s) url (Item::URL_FORMAT, anchored) and is only created by CollectPinsJob as https://www.pinterest.com/pin/<id>/, so it cannot be a javascript: url."
+      "code": "link_to(Item.find(params.expect(:id)).url, :target => \"_blank\", :rel => \"noopener noreferrer\", :title => (\"Open on #{Item.find(params.expect(:id)).post.source_name}\"))",
+      "note": "Item#url is validated as a full http(s) url (Item::URL_FORMAT, anchored) and is only created by CollectPinsJob as a Pinterest pin or Flickr photo page url, so it cannot be a javascript: url."
     },
     {
       "warning_type": "Cross-Site Scripting",
-      "fingerprint": "e020f8ff9527bb250b2213d057cf3971062761dab6b06eff418a7c52b990d81d",
+      "fingerprint": "3e88c5082f52ad3b9c41f10679f433702f2bd3b0e8efaa2af468c890482939e8",
       "check_name": "LinkToHref",
       "message": "Potentially unsafe model attribute in `link_to` href",
       "file": "app/views/items/show.html.erb",
       "line": 29,
-      "code": "link_to(\"Open on Pinterest \\u2197\", Item.find(params.expect(:id)).url, :target => \"_blank\", :rel => \"noopener noreferrer\", :class => \"hover:text-white\")",
-      "note": "Item#url is validated as a full http(s) url (Item::URL_FORMAT, anchored) and is only created by CollectPinsJob as https://www.pinterest.com/pin/<id>/, so it cannot be a javascript: url."
+      "code": "link_to(\"Open on #{Item.find(params.expect(:id)).post.source_name} \\u2197\", Item.find(params.expect(:id)).url, :target => \"_blank\", :rel => \"noopener noreferrer\", :class => \"hover:text-white\")",
+      "note": "Item#url is validated as a full http(s) url (Item::URL_FORMAT, anchored) and is only created by CollectPinsJob as a Pinterest pin or Flickr photo page url, so it cannot be a javascript: url."
     },
     {
       "warning_type": "Redirect",
@@ -28,7 +28,7 @@
       "file": "app/controllers/items_controller.rb",
       "line": 7,
       "code": "redirect_to(Item.find(params.expect(:id)).url, :allow_other_host => true)",
-      "note": "Intentional: opening an item outside the preview modal (new tab, no JavaScript) goes to its Pinterest pin. Item#url is a validated http(s) url built by CollectPinsJob, not request input."
+      "note": "Intentional: opening an item outside the preview modal (new tab, no JavaScript) goes to its Pinterest pin or Flickr photo page. Item#url is a validated http(s) url built by CollectPinsJob, not request input."
     }
   ],
   "brakeman_version": "8.1.0"

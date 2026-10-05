@@ -1,2 +1,2 @@
-<%= turbo_stream.replace "idea_form", partial: "posts/idea_form", locals: { post: Post.new } %>
+<%= turbo_stream.replace "idea_form", partial: "posts/idea_form", locals: { post: Post.new(source: @post.source) } %>
 <%= turbo_stream.prepend "posts", partial: "posts/entry", locals: { post: @post } %>

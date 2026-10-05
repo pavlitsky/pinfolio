@@ -16,9 +16,32 @@ RSpec.describe Post, type: :model do
     end
   end
 
+  describe "source" do
+    it "defaults to Pinterest" do
+      expect(build(:post)).to be_pinterest
+    end
+
+    it "can be Flickr" do
+      expect(build(:post, source: :flickr)).to be_valid
+    end
+
+    it "is invalid when unknown" do
+      post = build(:post, source: "instagram")
+
+      expect(post).not_to be_valid
+      expect(post.errors[:source]).to include("is not included in the list")
+    end
+  end
+
   describe "database constraints" do
     it "rejects a NULL title" do
       expect { build(:post, title: nil).save!(validate: false) }.to raise_error(ActiveRecord::NotNullViolation)
+    end
+
+    it "rejects an unknown source" do
+      post = create(:post)
+
+      expect { post.update_column(:source, "instagram") }.to raise_error(ActiveRecord::StatementInvalid, /CHECK constraint/)
     end
   end
 
@@ -100,12 +123,26 @@ RSpec.describe Post, type: :model do
       expect(build(:post)).not_to be_pins_exhausted
     end
 
-    it "is false while Pinterest has more pages" do
-      expect(build(:post, pinterest_bookmark: "abc")).not_to be_pins_exhausted
+    it "is false while the source has more pages" do
+      expect(build(:post, search_cursor: "abc")).not_to be_pins_exhausted
     end
 
-    it "is true once Pinterest has no more pages" do
-      expect(build(:post, pinterest_bookmark: PinterestSearch::END_BOOKMARK)).to be_pins_exhausted
+    it "is true once the source has no more pages" do
+      expect(build(:post, search_cursor: Post::END_CURSOR)).to be_pins_exhausted
+    end
+  end
+
+  describe "#search" do
+    it "is the search service of the post's source" do
+      expect(build(:post).search).to eq(PinterestSearch)
+      expect(build(:post, source: :flickr).search).to eq(FlickrSearch)
+    end
+  end
+
+  describe "#source_name" do
+    it "is the source's display name" do
+      expect(build(:post).source_name).to eq("Pinterest")
+      expect(build(:post, source: :flickr).source_name).to eq("Flickr")
     end
   end
 
@@ -143,24 +180,24 @@ RSpec.describe Post, type: :model do
   end
 
   describe "renaming" do
-    let(:post) { create(:post, title: "cozy cabin", pinterest_bookmark: "b3") }
+    let(:post) { create(:post, title: "cozy cabin", search_cursor: "b3") }
 
-    it "restarts the Pinterest search when the title changes" do
+    it "restarts the search when the title changes" do
       post.update!(title: "snowy cabin")
 
-      expect(post.reload.pinterest_bookmark).to be_nil
+      expect(post.reload.search_cursor).to be_nil
     end
 
     it "keeps the search position when other attributes change" do
-      post.update!(pinterest_bookmark: "b4")
+      post.update!(search_cursor: "b4")
 
-      expect(post.reload.pinterest_bookmark).to eq("b4")
+      expect(post.reload.search_cursor).to eq("b4")
     end
 
     it "keeps the search position when the title is saved unchanged" do
       post.update!(title: "cozy cabin")
 
-      expect(post.reload.pinterest_bookmark).to eq("b3")
+      expect(post.reload.search_cursor).to eq("b3")
     end
   end
 
