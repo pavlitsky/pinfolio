@@ -2,21 +2,30 @@
 <%# Refreshes when posts are created elsewhere (another tab) %>
 <%= turbo_stream_from "posts" %>
 
+<%# Full-width sticky header, rendered by the layout above the page container %>
+<% content_for :header do %>
+  <header class="group/header sticky top-0 z-10 bg-white/80 backdrop-blur-md transition-shadow duration-300 data-scrolled:shadow-md data-scrolled:shadow-emerald-900/5"
+          data-controller="scrolled" data-action="scroll@window->scrolled#update:passive turbo:morph@document->scrolled#update">
+    <div class="container relative mx-auto px-5 py-6">
+      <%# Inset like the post cards' padding, so it lines up with the post titles; above the search on phones.
+          The gradient is twice the link's width and slides to its other half on hover %>
+      <%= link_to "Pinfolio", root_path,
+            class: "block w-fit mb-3 mx-4 bg-linear-to-r from-emerald-600 via-green-500 to-lime-500 bg-size-[200%_auto] bg-clip-text font-display text-4xl text-transparent origin-left transition-[background-position,scale] duration-700 ease-out hover:bg-right group-data-scrolled/header:scale-90 motion-reduce:transition-none sm:absolute sm:inset-y-0 sm:left-10 sm:mx-0 sm:mb-0 sm:flex sm:items-center" %>
+      <%= render "idea_form", post: @post %>
+      <%# Right-aligned: in the app name's row on phones, centred beside the search on wider screens %>
+      <div class="absolute right-9 top-6 flex h-10 items-center sm:inset-y-0 sm:right-10 sm:h-auto">
+        <%= render "about" %>
+      </div>
+    </div>
+    <%# Accent hairline along the bottom edge, stronger once the page scrolls under the header %>
+    <div class="absolute inset-x-0 bottom-0 h-px bg-linear-to-r from-transparent via-emerald-300 to-transparent opacity-50 transition-opacity duration-300 group-data-scrolled/header:opacity-100"></div>
+  </header>
+<% end %>
+
 <div class="w-full">
   <% if notice.present? %>
     <p class="py-2 px-3 bg-green-50 mb-5 text-green-500 font-medium rounded-md inline-block" id="notice"><%= notice %></p>
   <% end %>
-
-  <div class="sticky top-0 z-10 bg-white/70 backdrop-blur-md py-4 mb-4">
-    <%# Inset like the post cards' padding, so it lines up with the post titles; above the search on phones %>
-    <%= link_to "Pinfolio", root_path,
-          class: "block mb-3 px-4 font-display text-4xl text-gray-800 hover:text-gray-900 sm:absolute sm:inset-y-0 sm:left-5 sm:mb-0 sm:flex sm:items-center sm:px-0" %>
-    <%= render "idea_form", post: @post %>
-    <%# Right-aligned: in the app name's row on phones, centred beside the search on wider screens %>
-    <div class="absolute right-4 top-4 flex h-10 items-center sm:inset-y-0 sm:right-5 sm:h-auto">
-      <%= render "about" %>
-    </div>
-  </div>
 
   <div id="posts" class="min-w-full space-y-5">
     <%= render partial: "entry", collection: @posts, as: :post %>
