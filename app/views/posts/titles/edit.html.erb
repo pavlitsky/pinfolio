@@ -5,8 +5,7 @@
           autocomplete: "off",
           "aria-label": "Post title",
           data: { inline_edit_target: "input", action: "blur->inline-edit#commit" },
-          class: ["field-sizing-content min-w-[8ch] max-w-full bg-transparent border-b-2 font-display text-[2.4rem] leading-tight text-gray-800 focus:outline-none",
-                  @post.errors[:title].any? ? "border-red-400" : "border-gray-300 focus:border-gray-500"] %>
+          class: "field-sizing-content min-w-[8ch] max-w-full bg-transparent font-display text-[2.4rem] leading-tight text-gray-800 focus:outline-none" %>
     <% @post.errors.full_messages_for(:title).each do |message| %>
       <p class="mt-1 text-sm text-red-500"><%= message %></p>
     <% end %>
