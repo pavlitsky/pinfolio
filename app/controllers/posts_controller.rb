@@ -1,7 +1,7 @@
 class PostsController < ApplicationController
   # GET /posts
   def index
-    @post = Post.new
+    @post = Post.new(source: remembered_source)
     load_posts
   end
 
@@ -39,6 +39,10 @@ class PostsController < ApplicationController
     def load_posts
       @posts = Post.includes(items: { image_attachment: :blob }).order(created_at: :desc)
     end
+
+    # The source last chosen in the idea form's switcher (saved in a cookie by its
+    # source-switcher controller), or the default when there is none or it's unknown
+    def remembered_source = cookies[:post_source].presence_in(Post.sources.keys) || Post.column_defaults["source"]
 
     # Only allow a list of trusted parameters through.
     def post_params

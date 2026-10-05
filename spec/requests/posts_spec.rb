@@ -37,6 +37,24 @@ RSpec.describe "/posts", type: :request do
       expect(radios.select { |radio| radio["checked"] }.map { |radio| radio["value"] }).to eq([ "pinterest" ])
     end
 
+    describe "the remembered source" do
+      def checked_source = Nokogiri::HTML(response.body).at_css("form#idea_form input[name='post[source]'][checked]")&.[]("value")
+
+      it "preselects the source last chosen in the switcher" do
+        cookies[:post_source] = "flickr"
+        get root_url
+
+        expect(checked_source).to eq("flickr")
+      end
+
+      it "falls back to Pinterest for an unknown source" do
+        cookies[:post_source] = "instagram"
+        get root_url
+
+        expect(checked_source).to eq("pinterest")
+      end
+    end
+
     it "shows the app name linking home in the header, outside the idea form" do
       get root_url
 
