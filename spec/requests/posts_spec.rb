@@ -132,9 +132,17 @@ RSpec.describe "/posts", type: :request do
         # Skips morphs but isn't permanent, so streams can still replace it (clearing it after a create)
         form = page.at_css("#idea_form")
         expect(form).not_to have_attribute("data-turbo-permanent")
-        expect(form["data-action"]).to eq("turbo:before-morph-element->morph-skip#skip")
+        expect(form["data-action"].split).to include("turbo:before-morph-element->morph-skip#skip")
         expect(page.at_css("##{ActionView::RecordIdentifier.dom_id(post_record, :hidden_panel)}")).to have_attribute("data-turbo-permanent")
         expect(page.at_css("##{ActionView::RecordIdentifier.dom_id(post_record)}")["data-action"]).to eq("turbo:before-morph-attribute->toggle#preserveState")
+      end
+
+      it "scrolls back to the top after the idea form creates a post, so the new post is in view" do
+        get root_url
+
+        form = page.at_css("#idea_form")
+        expect(form["data-controller"].split).to include("scroll-top")
+        expect(form["data-action"].split).to include("turbo:submit-end->scroll-top#scroll")
       end
     end
 

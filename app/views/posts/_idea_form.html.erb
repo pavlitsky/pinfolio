@@ -1,5 +1,5 @@
 <%# Not data-turbo-permanent: streams replace it to clear it after a create or show errors %>
-<%= form_with(model: post, id: "idea_form", data: { controller: "morph-skip", action: "turbo:before-morph-element->morph-skip#skip" }) do |form| %>
+<%= form_with(model: post, id: "idea_form", data: { controller: "morph-skip scroll-top", action: "turbo:before-morph-element->morph-skip#skip turbo:submit-end->scroll-top#scroll" }) do |form| %>
   <div class="relative w-full sm:w-1/2 mx-auto">
     <%= form.text_field :title,
           placeholder: "Search anything...",
